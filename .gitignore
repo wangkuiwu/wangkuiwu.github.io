@@ -1,0 +1,12 @@
+
+
+*.[sS]
+*.o
+*.swp
+*.vim
+*.tgz
+*.out
+*.class
+
+_posts/test
+CNAME
