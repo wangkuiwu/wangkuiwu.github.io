@@ -1,3 +1,11 @@
+---
+layout: post
+title: "邻接表无向图(一) 之C语言的实现"
+description: "list undirected graph"
+category: datastructure
+tags: []
+---
+
 
 邻接表无向图(一) 之C语言的实现
 
