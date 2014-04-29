@@ -1,7 +1,7 @@
 ---
 title: Links
 layout: page
-comments: yes
+comments: no
 ---
 
 暂无

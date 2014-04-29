@@ -3,24 +3,13 @@ layout: post
 title: "邻接矩阵无向图(一) 之C语言的实现"
 description: "matrix undirected graph"
 category: datastructure
-tags: []
+tags: [datastructure,c]
+date: 2015-01-01 18:42
 ---
-
 
 # 概要
 
-本章介绍邻接矩阵无向图。在"[图的理论基础][link_graph_thesis]"中已经对图进行了理论介绍，这里就不再对图的概念进行重复说明了。和以往一样，本文会先给出C语言的实现；后续再分别给出C++和Java版本的实现。实现的语言虽不同，但是原理如出一辙，选择其中之一进行了解即可。若文章有错误或不足的地方，请不吝指出！ 
-
-**目录**
-
-+ [邻接矩阵无向图的介绍](#anchor1)
-+ [邻接矩阵无向图的代码说明](#anchor2)
-+ [邻接矩阵无向图的完整源码和测试程序](#anchor3)
-
------------------
-转载请注明出处：TODO[http://www.cnblogs.com/skywang12345/](http://www.cnblogs.com/skywang12345/)
-
-
+> 本章介绍邻接矩阵无向图。在"[图的理论基础][link_graph_thesis]"中已经对图进行了理论介绍，这里就不再对图的概念进行重复说明了。和以往一样，本文会先给出C语言的实现；后续再分别给出C++和Java版本的实现。实现的语言虽不同，但是原理如出一辙，选择其中之一进行了解即可。若文章有错误或不足的地方，请不吝指出！ 
 
 
 <a id="anchor1"></a>
@@ -28,7 +17,7 @@ tags: []
 
 邻接矩阵无向图是指通过邻接矩阵表示的无向图。
 
-<img src="http://www.cnblogs.com/images/cnblogs_com/skywang12345/552879/t_f1.jpg" alt="TODO" width="40px"/ >
+<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pic/graph/graph/dg_list.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pic/graph/graph/dg_list.jpg?raw=true" alt="" width="500" /></a>
 
 上面的图G1包含了"A,B,C,D,E,F,G"共7个顶点，而且包含了"(A,C),(A,D),(A,F),(B,C),(C,D),(E,G),(F,G)"共7条边。由于这是无向图，所以边(A,C)和边(C,A)是同一条边；这里列举边时，是按照字母先后顺序列举的。
 
@@ -36,9 +25,9 @@ tags: []
 
 
 
-
 <a id="anchor2"></a>
 # 邻接矩阵无向图的代码说明
+
 
 ## 1. 基本定义
 
@@ -51,10 +40,10 @@ tags: []
         int matrix[MAX][MAX]; // 邻接矩阵
     }Graph, *PGraph;
 
-
 Graph是邻接矩阵对应的结构体。
 
 vexs用于保存顶点，vexnum是顶点数，edgnum是边数；matrix则是用于保存矩阵信息的二维数组。例如，matrix[i][j]=1，则表示"顶点i(即vexs[i])"和"顶点j(即vexs[j])"是邻接点；matrix[i][j]=0，则表示它们不是邻接点。
+
 
 ## 2. 创建矩阵
 
@@ -171,7 +160,7 @@ create_graph()是读取用户的输入，将输入的数据转换成对应的无
 <a id="anchor3"></a>
 # 邻接矩阵无向图的完整源码和测试程序
 
-TODO[完整源码][link_source_code]
+点击查看：[完整源码][link_source_code]
 
 上面的源码中包含了测试代码，测试程序的运行结果如下：
 
@@ -186,4 +175,4 @@ TODO[完整源码][link_source_code]
 
 
 [link_graph_thesis]: http://www.cnblogs.com/skywang12345/ "GraphThesis"
-[link_source_code]: http://www.cnblogs.com/skywang12345/ "GraphThesis"
+[link_source_code]: https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/datastructs/graph/basic/udg/c/matrix_udg.c "source code"
