@@ -1,5 +1,5 @@
 ---
-title: Categories
+title: Category
 layout: page
 ---
 
