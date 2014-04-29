@@ -6,23 +6,19 @@ layout: default
 {{ content }}
 </section>
 <section class="meta">
-
-<br/>
-<br/>
+<span class="time">
+  <time datetime="{{ page.date | date:"%Y-%m-%d %H:%M%S" }}">{{ page.date | date:"%Y-%m-%d %H:%M:%S" }}</time>
+</span>
+<span class="author">
+  by <a href="http://wangkuiwu.github.io">{{ site.author }}</a>
+</span>
+<hr>
 <span>
 	<a {% if page.previous %} href="{{ site.url }}{{ page.previous.url }}" class="pageNav"{% endif %} {% unless page.previous %} class="pageNavInvalid" {% endunless %} >Previous</a>
 	&nbsp;&nbsp;&nbsp;
 	<a {% if page.next %} href="{{ site.url }}{{ page.next.url }}" class="pageNav"{% endif %} {% unless page.next %} class="pageNavInvalid" {% endunless %} >Next</a>
 </span>
-<hr>
-<span class="author">
-  <a href="http://wangkuiwu.github.io">{{ site.author }}</a>
-</span>
-<span class="time">
-  /
-  <time datetime="{{ page.date | date:"%Y-%m-%d" }}">{{ page.date | date:"%Y-%m-%d" }}</time>
-</span>
-<br />
+<!-- del by skywang
 <span class="license">
   Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
 </span>
@@ -42,6 +38,7 @@ layout: default
   {% endfor %}
 </span>
 {% endif %}
+-->
 </section>
 {% include comments.md %}
 <!--
