@@ -8,7 +8,6 @@ date: 2014-03-25 09:27
 ---
 
 
-# 概要
 
 > 本章介绍Linux内核中双向链表及其相关知识(offsetof和container_of两个宏)。
 
