@@ -6,6 +6,12 @@ comments: yes
 
 
 
+ **欢迎来到留言板！**
+
+ 来的都是客人，不管抢没抢到沙发，找个地方随便坐...  
+
+<hr>
+
 <p>
 <span style="display:block; text-align:center">
 <strong>安全体系</strong>
@@ -47,6 +53,3 @@ comments: yes
 </span>
 </p>
 <hr>
-上面是一则寓言，觉得有点意思，拿出来和大家分享。既然来了，也请留下你的足迹吧...
-<hr>
-
