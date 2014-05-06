@@ -8,7 +8,6 @@
 *.out
 *.class
 
-_drafts/
 _site/
 _posts/test
 CNAME
