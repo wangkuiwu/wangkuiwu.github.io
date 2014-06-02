@@ -12,7 +12,7 @@ date: 2014-05-30 19:25
 > **目录**  
 > **1**. [SharedPreferences保存数据](#anchor1)  
 > **2**. [File保存数据](#anchor2)  
-> **3**. [SQLite保存数据(#anchor3)  
+> **3**. [SQLite保存数据](#anchor3)  
 
 
 <a name="anchor1"></a>
@@ -60,7 +60,11 @@ date: 2014-05-30 19:25
         boolean single = mPref.getBoolean(SP_SINGLE, false); 
     }   
 
-点击查看：[SharedPreferences工程的完整源码][]
+点击查看：[SharedPreferences工程的完整源码][https://github.com/wangkuiwu/android_applets/tree/master/training/01_getting_started/06_saving_data/01_shared_preferences/01_basic]
+
+
+
+
 
 <a name="anchor2"></a>
 # File保存数据
@@ -68,6 +72,9 @@ date: 2014-05-30 19:25
 将数据存储成文件，并保存到设备上。可以选择Exernal(外部) 和 Internal(内部)存储设别。
 
 (01) Exernal
+
+
+
 
 
 <a name="anchor3"></a>
