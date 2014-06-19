@@ -36,7 +36,7 @@ date: 2014-05-26 19:11
 
 ## 1.添加方式
 
-**第一步**：通过添加xml文件来指令ActionBar中的按钮。例如，添加`xml/menu/menu.xml`，内容如下：
+**第一步**：通过添加xml文件来指令ActionBar中的按钮。例如，添加`res/menu/main_activity_actions.xml`，内容如下：
 
     <menu xmlns:android="http://schemas.android.com/apk/res/android" >
         <!-- Search, should appear as action button -->
