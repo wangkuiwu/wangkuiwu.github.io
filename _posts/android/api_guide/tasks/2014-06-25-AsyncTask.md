@@ -4,7 +4,7 @@ title: "Android之AsyncTask介绍"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-02 09:11
+date: 2014-06-25 09:11
 ---
 
 
@@ -190,6 +190,16 @@ execute()的源码如下：
 
 下面是线程池相关的代码：
 
+    private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
+    private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
+    private static final int KEEP_ALIVE = 1;
+
+    public static final Executor THREAD_POOL_EXECUTOR
+            = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
+                    TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
+
+    ...
+
     public static final Executor SERIAL_EXECUTOR = new SerialExecutor();
     private static volatile Executor sDefaultExecutor = SERIAL_EXECUTOR;
 
@@ -219,7 +229,7 @@ execute()的源码如下：
         }
     }
 
-说明：该线程池是"通过双向队列实现的串行线程池"，一次性只会执行一个任务。
+说明：该线程池是"通过双向队列实现的串行线程池"。scheduleNext()每次只会执行一个任务。
 
 
 下面看看executeOnExecutor()的代码：
@@ -257,6 +267,8 @@ execute()的源码如下：
 当任务是RUNNING或PENDING状态时，会抛出异常。这就决定了，一个AsyncTask只能被执行一次，即只能对一个AsyncTask调用一次execute()；如果要重新执行任务，则需要新建AsyncTask后再调用execute()。  
 (02) 接着，调用onPreExecute()。这也就是任务执行前的准备动作！  
 (03) 然后，调用exec.execute(mFuture)。作用是将任务提交到线程池中进行执行。线程池的代码前面已经给出，SerialExecutor中的execute()会执行r.run()任务。r.run()实际上是调用FutureTask中run()方法，而FutureTask的run()方法，则会执行Callable的call()函数，即会执行到mWorker的call()方法。而观察前面mWorker的run()方法，我们会发现它会调用doInBackground()接口，并通过postResult()返回任务执行结果。而postResult()的内容如下：   
+
+    private static final InternalHandler sHandler = new InternalHandler();
 
     private Result postResult(Result result) {
         @SuppressWarnings("unchecked")
