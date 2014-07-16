@@ -14,7 +14,7 @@ date: 2014-06-23 10:11
 <a name="anchor1"></a>
 # PreferenceFragment使用说明
 
-点击查看：[PreferenceFragment的完整代码](TODO)
+点击查看：[PreferenceFragment的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/fragment/preference_fragment/01_basic)
 
 ## 1. 创建配置文件
 

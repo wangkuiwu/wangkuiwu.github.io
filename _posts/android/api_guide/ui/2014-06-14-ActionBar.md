@@ -14,7 +14,7 @@ date: 2014-06-14 09:11
 <a name="anchor1"></a>
 # ActionBar的基本用法
 
-点击查看：[ActionBar的基本用法完整代码](TODO)
+点击查看：[ActionBar的基本用法完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/actionbar/01_basic/BarTest)
 
 ActionBar和Menu的基本用于差不多，毕竟Menu通常是依附于ActionBar之上的。所以，使用ActionBar也需要在manfest中添加相关主题。例如：
 
@@ -90,7 +90,7 @@ ActionBar和Menu的基本用于差不多，毕竟Menu通常是依附于ActionBar
 <a name="anchor2"></a>
 # 隐藏ActionBar
 
-点击查看：[隐藏ActionBar的完整代码](TODO)
+点击查看：[隐藏ActionBar的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/actionbar/02_hide/BarTest)
 
 通常有两种方式隐藏ActionBar。
 
@@ -109,7 +109,7 @@ ActionBar和Menu的基本用于差不多，毕竟Menu通常是依附于ActionBar
 <a name="anchor3"></a>
 # ActionBar向上导航
 
-点击查看：[ActionBar向上导航的完整代码](TODO)
+点击查看：[ActionBar向上导航的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/actionbar/03_homeup/BarTest)
 
 ## 1. 显示向上导航
 
@@ -142,7 +142,7 @@ ActionBar和Menu的基本用于差不多，毕竟Menu通常是依附于ActionBar
 <a name="anchor4"></a>
 # ActionBar的Tab
 
-点击查看：[ActionBarMenu的完整代码](TODO)
+点击查看：[ActionBarMenu的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/actionbar/04_tab/BarTest)
 
 ## 1. 新建Tab所需要的Fragment
 

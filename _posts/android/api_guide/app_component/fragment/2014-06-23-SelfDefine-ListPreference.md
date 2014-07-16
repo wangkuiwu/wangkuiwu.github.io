@@ -18,7 +18,7 @@ date: 2014-06-23 13:11
 
 接下来，将通过示例来演示如何在ListPreference中显示图片。
 
-点击查看：[ListPreference示例的完整代码](TODO)
+点击查看：[ListPreference示例的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/fragment/preference_fragment/02_selfdeine_ListPreference_with_attr)
 
 ## 1. 自定义属性
 
@@ -377,7 +377,7 @@ res/layout/main.xml的内容如下：
 
 如果你想通过提供API的方式，而不是配置属性的方式完成上面的工作。那么，也是可以办到的！
 
-点击查看：[修改后的自定义ListPreference源码](TODO)
+点击查看：[修改后的自定义ListPreference源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/fragment/preference_fragment/03_selfdeine_ListPreference_plus_api)
 
 **不过，还是建议采用配置属性的方式！**
 

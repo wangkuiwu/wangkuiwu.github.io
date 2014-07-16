@@ -39,7 +39,7 @@ standard模式是默认模式。在该模式下，Activity可以拥有多个实�
 
 下面通过示例来对standard进行验证。在该示例中，ActivityTest是standard模式的，而且点击ActivityTest中的按钮能跳转到它自身。
 
-点击查看：[standard模式的测试源码](TODO)
+点击查看：[standard模式的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/01_standard)
 
 manifest源码
 
@@ -93,7 +93,7 @@ singleTop模式下，在同一个task中，如果存在该Activity的实例，�
 
 ## 2.1 singleTop示例一
 
-点击查看：[singleTop示例二的源码](TODO)
+点击查看：[singleTop示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/02_single_top/SingleActvity)
 
 我们将"standard示例"中ActivityTest的launchMode修改为singleTop，其他的保持不变。修改后的manifest如下：
 
@@ -122,7 +122,7 @@ singleTop模式下，在同一个task中，如果存在该Activity的实例，�
 
 在该示例中，有两个Activity：ActivityTest和SecondActivity。其中ActivityTest是singleTop类型的，而SecondActivity则是standard类型的。这两个Activity之间能相互跳转。
 
-点击查看：[singleTop示例二的源码](TODO)
+点击查看：[singleTop示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/02_single_top/TwoActivity)
 
 manifest的源码
 
@@ -221,7 +221,7 @@ Google官网对singleTask的描述如下：
 
 ## 4.1 singleTask示例一
 
-点击查看：[singleTask示例一的测试源码](TODO)
+点击查看：[singleTask示例一的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/03_single_task/01_same_taskAffinity)
 
 该示例是来验证：(01) 第一次创建singleTask类型的Activity时，会创建新的task！(02) 该Activity实例已经存在时，不会创建新的Activity实例，才是跳转到已有的Activity实例中。
 
@@ -253,7 +253,7 @@ Google官网对singleTask的描述如下：
 
 ## 4.2 singleTask示例二
 
-点击查看：[singleTask示例二的测试源码](TODO)
+点击查看：[singleTask示例二的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/03_single_task/02_diff_taskAffinity)
 
 将"singleTask示例一"中的两个Activity的taskAffinity改为不同，其他保持不变。修改后的manifest如下：
 
@@ -301,7 +301,7 @@ singleInstance，顾名思义，是单一实例的意思，即任意时刻只允
 
 ## 5.1 singleInstance示例一
 
-点击查看：[singleInstance示例一的测试源码](TODO)
+点击查看：[singleInstance示例一的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/04_single_instance/singleTop_singleInstance)
 
 
 将前面的"singleTop示例二"中的ActivityTest的模式改为"standard"，将SecondActivity的模式改为"singleInstance"。修改后的manifest如下：
@@ -331,7 +331,7 @@ singleInstance，顾名思义，是单一实例的意思，即任意时刻只允
 
 ## 5.2 singleInstance示例二
 
-点击查看：[singleInstance示例二的测试源码](TODO)
+点击查看：[singleInstance示例二的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/launch_mode/04_single_instance/standard_singleInstance)
 
 
 将前面的"singleInstance示例一"中的ActivityTest的模式改为"singleTop"。修改后的manifest如下：

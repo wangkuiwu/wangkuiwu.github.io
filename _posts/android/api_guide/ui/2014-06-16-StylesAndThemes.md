@@ -16,7 +16,7 @@ date: 2014-06-16 09:11
 
 Style样式可以划分为两种：Android系统自带的Style 和 自定义的Style。
 
-点击查看：[Style的完整代码](TODO)
+点击查看：[Style的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/style_theme/01_style)
 
 
 ## 1. Android系统自带的Style
@@ -77,7 +77,7 @@ Style样式可以划分为两种：Android系统自带的Style 和 自定义的S
 
 Theme主题也可以划分为两种：Android系统自带的Theme 和 自定义的Theme。
 
-点击查看：[Theme的完整代码](TODO)
+点击查看：[Theme的完整代码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/style_theme/02_theme)
 
 
 

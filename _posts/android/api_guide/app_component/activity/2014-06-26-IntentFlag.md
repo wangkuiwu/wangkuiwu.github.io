@@ -47,7 +47,7 @@ date: 2014-06-26 10:12
 
 ## 1.1 FLAG_ACTIVITY_NEW_TASK示例一
 
-点击查看：[FLAG_ACTIVITY_NEW_TASK示例一的源码](TODO)
+点击查看：[FLAG_ACTIVITY_NEW_TASK示例一的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/02_new_task/01_same_taskAffinity)
 
 在该实例中，有两个Activity：ActivityTest和SecondActivity。manifest定义如下：
 
@@ -135,7 +135,7 @@ date: 2014-06-26 10:12
 
 ## 1.2 FLAG_ACTIVITY_NEW_TASK示例二
 
-点击查看：[FLAG_ACTIVITY_NEW_TASK示例二的源码](TODO)
+点击查看：[FLAG_ACTIVITY_NEW_TASK示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/02_new_task/02_diff_taskAffinity)
 
 我们修改"FLAG_ACTIVITY_NEW_TASK示例一"中manifest，将ActivityTest和SecondActivity的android:taskAffinity改为不同；其余的保持不变！修改后的manifest如下：
 
@@ -168,7 +168,7 @@ date: 2014-06-26 10:12
 
 ## 2.1 FLAG_ACTIVITY_CLEAR_TOP示例一
 
-点击查看：[FLAG_ACTIVITY_CLEAR_TOP示例一的源码](TODO)。
+点击查看：[FLAG_ACTIVITY_CLEAR_TOP示例一的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/03_clear_top/01_same_taskAffinity)。
 
 我们修改"FLAG_ACTIVITY_NEW_TASK示例一"中onJump()函数，修改后的代码如下：
 
@@ -189,7 +189,7 @@ date: 2014-06-26 10:12
 
 ## 2.2 FLAG_ACTIVITY_CLEAR_TOP示例二
 
-点击查看：[FLAG_ACTIVITY_CLEAR_TOP示例二的源码](TODO)。
+点击查看：[FLAG_ACTIVITY_CLEAR_TOP示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/03_clear_top/02_diff_taskAffinity)。
 
 我们修改"FLAG_ACTIVITY_NEW_TASK示例一"中onJump()函数，修改后的代码如下：
 
@@ -216,7 +216,7 @@ date: 2014-06-26 10:12
 
 ## 3.1 FLAG_ACTIVITY_CLEAR_TASK示例一
 
-点击查看：[FLAG_ACTIVITY_CLEAR_TASK示例一的源码](TODO)
+点击查看：[FLAG_ACTIVITY_CLEAR_TASK示例一的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/04_clear_task/01_same_taskAffinity)
 
 
 我们修改"FLAG_ACTIVITY_NEW_TASK示例一"中onJump()函数，修改后的代码如下：
@@ -238,7 +238,7 @@ date: 2014-06-26 10:12
 
 ## 3.2 FLAG_ACTIVITY_CLEAR_TASK示例二
 
-点击查看：[FLAG_ACTIVITY_CLEAR_TASK示例二的源码](TODO)
+点击查看：[FLAG_ACTIVITY_CLEAR_TASK示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/04_clear_task/02_diff_taskAffinity)
 
 我们修改"FLAG_ACTIVITY_NEW_TASK示例一"中onJump()函数，修改后的代码如下：
 
@@ -267,8 +267,8 @@ date: 2014-06-26 10:12
 FLAG_ACTIVITY_SINGLE_TOP的特性和launchMode="singleTop"一样！这里就不做过多的说明了。
 
 
-点击查看：[FLAG_ACTIVITY_SINGLE_TOP示例一的源码](TODO)。该示例中，只有一个Activity示例，点击该Activity会跳转到它自身。
+点击查看：[FLAG_ACTIVITY_SINGLE_TOP示例一的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/01_single_top/01_single)。该示例中，只有一个Activity示例，点击该Activity会跳转到它自身。
 
-点击查看：[FLAG_ACTIVITY_SINGLE_TOP示例二的源码](TODO)。该示例中，有两个Activity示例，两个Activity之间可以相互跳转。
+点击查看：[FLAG_ACTIVITY_SINGLE_TOP示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/activity/intent_lauchmode/01_single_top/02_same_taskAffinity)。该示例中，有两个Activity示例，两个Activity之间可以相互跳转。
 
 

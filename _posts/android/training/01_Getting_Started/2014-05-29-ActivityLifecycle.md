@@ -180,7 +180,6 @@ onCreate() --> onDestroy()
 
 常见动作：通常在onCreate()中销毁和释放资源。
 
-TODO
 注意：onDestroy()被调用有两种情况：一种是Activity在Stopped状态被销毁；另一种是在非Stopped状态调用finish()来主动销毁该Activity。
 
 

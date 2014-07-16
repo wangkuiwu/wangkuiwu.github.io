@@ -4,7 +4,7 @@ title: "Android API指南(二)自定义控件03之 onLayout"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-20 10:11
+date: 2014-06-20 11:11
 ---
 
 
@@ -14,7 +14,7 @@ date: 2014-06-20 10:11
 <a name="anchor1"></a>
 # onLayout简介
 
-点击查看：[onLayout示例的完整源码](TODO)
+点击查看：[onLayout示例的完整源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/self_view/05_viewgroup/ViewTest)
 
 在view给其孩子设置尺寸和位置时被调用。在我们自定义ViewGroup时，通常需要覆盖该方法。示例如下：
 

@@ -1,14 +1,14 @@
 ---
 layout: post
-title: "Android API指南(二)自定义控件03之 位置说明"
+title: "Android API指南(二)自定义控件04之 位置说明"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-20 11:11
+date: 2014-06-20 12:11
 ---
 
 
-> 本文介绍位置信息。点击查看：[位置信息的测试源码](TODO)
+> 本文介绍位置信息。点击查看：[位置信息的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/self_view/04_position/ViewTest)
 
 
 <a name="anchor1"></a>

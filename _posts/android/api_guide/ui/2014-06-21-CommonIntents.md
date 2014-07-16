@@ -14,7 +14,7 @@ date: 2014-06-21 09:11
 <a name="anchor1"></a>
 # 1. 闹钟和秒表
 
-点击查看：[闹钟和秒表的测试源码](TODO)
+点击查看：[闹钟和秒表的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/01_alarm)
 
 启动闹钟的Intent示意如下：
 
@@ -50,7 +50,7 @@ date: 2014-06-21 09:11
 <a name="anchor2"></a>
 # 2. 行程
 
-点击查看：[行程的测试源码](TODO)
+点击查看：[行程的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/02_event)
 
 添加行程的Intent示意如下：
 
@@ -72,7 +72,7 @@ date: 2014-06-21 09:11
 <a name="anchor3"></a>
 # 3. 拍照并获取所拍的图片
 
-点击查看：[获取拍照图片的测试源码](TODO)
+点击查看：[获取拍照图片的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/03_camera)
 
 
 ## 3.1 打开Camera进行拍照
@@ -140,7 +140,7 @@ date: 2014-06-21 09:11
 <a name="anchor4"></a>
 # 4. 获取联系人
 
-点击查看：[获取联系人的测试源码](TODO)
+点击查看：[获取联系人的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/04_contact)
 
 下面给出获取联系人号码的示例：
 
@@ -178,7 +178,7 @@ date: 2014-06-21 09:11
 <a name="anchor5"></a>
 # 5. Email
 
-点击查看：[Email的测试源码](TODO)
+点击查看：[Email的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/05_email)
 
 打开Email程序的示意非常简单：
 
@@ -201,7 +201,7 @@ date: 2014-06-21 09:11
 <a name="anchor6"></a>
 # 6. 从图库中选择图片
 
-点击查看：[从图库中选择图片的测试源码](TODO)
+点击查看：[从图库中选择图片的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/06_gallery)
 
 ## 6.1 选择图片
 
@@ -267,7 +267,7 @@ date: 2014-06-21 09:11
 <a name="anchor7"></a>
 # 7. 打开网页
 
-点击查看：[网页的测试源码](TODO)
+点击查看：[网页的测试源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/app_components/intent/common_intents/07_webview)
 
 
     public void openWebPage(String url) {
