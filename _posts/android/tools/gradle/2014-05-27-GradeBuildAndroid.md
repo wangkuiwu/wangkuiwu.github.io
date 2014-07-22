@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "Android番外篇(二)之 使用Gradle管理Android工程"
+title: "Gradle工具(二)之 使用Gradle管理Android工程"
 description: ""
 category: gradle
 tags: [gradle]
-date: 2014-05-26 09:25
+date: 2014-05-27 10:25
 ---
 
 > 本文介绍利用Grade管理Android工程的方法。
