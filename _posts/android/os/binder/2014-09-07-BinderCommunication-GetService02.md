@@ -527,9 +527,45 @@ date: 2014-09-07 09:02
 
         ...
         off_end = (void *)offp + tr->offsets_size;
+        // 将flat_binder_object对象读取出来，
+        // 这里就是Service Manager中反馈的MediaPlayerService对象。
         for (; offp < off_end; offp++) {
+            struct flat_binder_object *fp;
             ...
+            fp = (struct flat_binder_object *)(t->buffer->data + *offp);
+
+            switch (fp->type) {
+                ...
+                case BINDER_TYPE_HANDLE:
+                case BINDER_TYPE_WEAK_HANDLE: {
+                    // 根据handle获取对应的Binder引用，即得到MediaPlayerService的Binder引用
+                    struct binder_ref *ref = binder_get_ref(proc, fp->handle);
+                    if (ref == NULL) {
+                        ...
+                    }
+                    // ref->node->proc是MediaPlayerService的进程上下文环境，
+                    // 而target_proc是MediaPlayer的进程上下文环境
+                    if (ref->node->proc == target_proc) {
+                        ...
+                    } else {
+                        struct binder_ref *new_ref;
+                        // 在MediaPlayer进程中引用"MediaPlayerService"。
+                        // 表现为，执行binder_get_ref_for_node()会，会先在MediaPlayer进程中查找是否存在MediaPlayerService对应的Binder引用；
+                        // 很显然是不存在的。于是，并新建MediaPlayerService对应的Binder引用，并将其添加到MediaPlayer的Binder引用红黑树中。
+                        new_ref = binder_get_ref_for_node(target_proc, ref->node);
+                        if (new_ref == NULL) {
+                            ...
+                        }
+                        // 将new_ref的引用描述复制给fp->handle。
+                        fp->handle = new_ref->desc;
+                        binder_inc_ref(new_ref, fp->type == BINDER_TYPE_HANDLE, NULL);
+                        ...
+                    }
+                } break;
+
+            }
         }
+
         if (reply) {
             binder_pop_transaction(target_thread, in_reply_to);
         } else if (!(t->flags & TF_ONE_WAY)) {
@@ -552,17 +588,17 @@ date: 2014-09-07 09:02
         ...
     }
 
-说明：reply=1，这里只关注reply部分。binder_transaction新建会新建"一个待处理事务t"和"待完成的工作tcomplete"，并根据反馈的数据对它们进行初始化。  
-(01) 此反馈最终是要回复给MediaPlayer的。因此，"待处理事务t"会被添加到MediaPlayer的待处理事务队列中。此时的target_thread被赋值为MediaPlayer所在的线程，而target_proc则是MediaPlayer对应的进程。  
-(02) 此时，Service Manager已经处理了getService请求，而Binder驱动在等待它的回复。于是，将一个BINDER_WORK_TRANSACTION_COMPLETE类型的"待完成工作tcomplete"添加到当前线程(即，Service Manager线程)的待处理事务队列中。
-(03) 此时，Service Manager已经处理完了getService请求。接下来，便调用binder_pop_transaction(target_thread, in_reply_to)将事务从"target_thread的事务栈"中删除，即从MediaPlayer线程的事务栈中删除该事务。  
-(04) 之后，设置事务的类型为BINDER_WORK_TRANSACTION，然后将其添加到target_list队列中。即，将事务添加到MediaPlayer的待处理事务队列中。  
-(05) 设置待完成工作的类型为BINDER_WORK_TRANSACTION_COMPLETE，然后将其添加到thread->todo中。即，将其添加到当前线程(Service Manager守护进程的线程)的待处理事务队列中。  
-(06) 最后，调用wake_up_interruptible()唤醒MediaPlayer。 
+说明：reply=1，这里只关注reply部分。  
+(01) 此反馈最终是要回复给MediaPlayer的。因此，target_thread被赋值为MediaPlayer所在的线程，target_proc则是MediaPlayer对应的进程，target_node为null。  
+(02) 这里，先看看for循环里面的内容，取出BR_REPLY指令所发送的数据，然后获取数据中的flat_binder_object变量fp。因为fp->type为BINDER_TYPE_HANDLE，因此进入BINDER_TYPE_HANDLE对应的分支。接着，通过binder_get_ref()获取MediaPlayerService对应的Binder引用；很明显，能够正常获取到MediaPlayerService的Binder引用。因为在MediaPlayerService调用addService请求时，已经创建了它的Binder引用。 binder_get_ref_for_node()的作用是在MediaPlayer进程上下文中添加"MediaPlayerService对应的Binder引用"。这样，后面就可以根据该Binder引用一步步的获取MediaPlayerService对象。 最后，将Binder引用的描述赋值给fp->handle。
+(03) 此时，Service Manager已经处理了getService请求。便调用binder_pop_transaction(target_thread, in_reply_to)将事务从"target_thread的事务栈"中删除，即从MediaPlayer线程的事务栈中删除该事务。  
+(04) 新建的"待处理事务t"的type为设为BINDER_WORK_TRANSACTION后，会被添加到MediaPlayer的待处理事务队列中。  
+(05) 此时，Service Manager已经处理了getService请求，而Binder驱动在等待它的回复。于是，将一个BINDER_WORK_TRANSACTION_COMPLETE类型的"待完成工作tcomplete"(作为回复)添加到当前线程(即，Service Manager线程)的待处理事务队列中。  
+(06) 最后，调用wake_up_interruptible()唤醒MediaPlayer。MediaPlayer被唤醒后，会对事务BINDER_WORK_TRANSACTION进行处理。
 
 
-OK，到现在为止，又有两个待处理事务：(01) Service Manager待处理事务列表中有个BINDER_WORK_TRANSACTION_COMPLETE类型的事务 (02) MediaPlayer待处理事务列表中有个BINDER_WORK_TRANSACTION事务。
+OK，到现在为止，还有两个待处理事务：(01) Service Manager待处理事务列表中有个BINDER_WORK_TRANSACTION_COMPLETE类型的事务 (02) MediaPlayer待处理事务列表中有个BINDER_WORK_TRANSACTION事务。
 
-关于BINDER_WORK_TRANSACTION_COMPLETE事务，前面已经介绍过了，它是用来告诉Binder驱动，任务已经全部完成的。当Service Manager再次调用ioctl(,BINDER_WRITE_READ,)，并执行binder_thread_read()时，会读出BINDER_WORK_TRANSACTION_COMPLETE事务；然后，将该事务从待处理事务队列中删除，并释放内存。
+关于BINDER_WORK_TRANSACTION_COMPLETE事务，它是用来告诉Binder驱动，任务已经全部完成的。当Service Manager再次调用ioctl(,BINDER_WRITE_READ,)，并执行binder_thread_read()时，会读出BINDER_WORK_TRANSACTION_COMPLETE事务；然后，将该事务从待处理事务队列中删除，并释放内存。
 
-下面就说说MediaPlayer被唤醒后，执行BINDER_WORK_TRANSACTION。
+下面就说说MediaPlayer被唤醒后，执行BINDER_WORK_TRANSACTION的流程。

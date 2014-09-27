@@ -2560,7 +2560,7 @@ MediaPlayerService收到的Binder驱动的反馈包含了两个指令：BR_NOOP�
 
 
     status_t IPCThreadState::waitForResponse(Parcel *reply, status_t *acquireResult)
-    {       
+    {
         int32_t cmd;
         int32_t err;
 
