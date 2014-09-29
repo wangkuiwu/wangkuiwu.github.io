@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Android Binder机制(三) Service Manager守护进程"
+title: "Android Binder机制(三) ServiceManager守护进程"
 description: "android"
 category: android
 tags: [android]
@@ -8,24 +8,45 @@ date: 2014-09-03 09:03
 ---
 
 
-> 本文会介绍Android的消息处理机制。  
+> ServiceManager是一个守护进程，它一直运行在后台。它的职责是管理Binder机制中的各个Server。当Server启动时，Server会将"Server对象"连同"Server对象的名字"一起注册到ServiceManager中；当Client需要获取Server对象时，则通过"Server对象的名字"从ServiceManager中找到对应的Server。  
+> 接下来，就是对ServiceManager进行介绍，通过它的启动流程来分析它是如何成为Server管理者的。
 
 > **目录**  
-> **1**. [Android消息机制的架构](#anchor1)  
-> **2**. [Android消息机制的源码解析](#anchor2)  
-> **2.1**. [消息循环](#anchor2_1)  
-> **2.2**. [消息的发送](#anchor2_2)  
-> **2.3**. [消息的处理](#anchor2_3)  
+> **1**. [ServiceManager流程图](#anchor_1st)  
+> **2**. [ServiceManager流程详解](#anchor_2nd)  
+> **2.1**. [main()](#anchor1)  
+> **2.2**. [binder_open()](#anchor2)  
+> **2.3**. [open("/dev/binder")](#anchor3)  
+> **2.4**. [mmap()](#anchor4)  
+> **2.5**. [binder_become_context_manager()](#anchor5)  
+> **2.6**. [ioctl(, BINDER_SET_CONTEXT_MGR,)](#anchor6)  
+> **2.7**. [binder_loop()](#anchor7)  
+> **2.8**. [for(;;)](#anchor8)  
+> **3**. [ServiceManager流程总结](#anchor_3rd)  
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
-TAG:SKYWANG-TODO
+
+<a name="anchor_1st"></a>
+# ServiceManager流程图
+
+ServiceManager定义在frameworks/native/cmds/servicemanager/service_manager.c。  
+ServiceManager启动之后，会先打开"/dev/binder"文件；"/dev/binder"是Binder驱动注册的设备节点。打开文件之后，再告诉Binder驱动，它是Binder的上下文管理者。之后，就进入到了消息循环中。进入消息循环之后，会不断的从Binder的待处理事务队列中读取事务(Binder请求或反馈)，读出事务之后就进行解析并处理；若没有事务，则进入等待状态，等待Client唤醒。
+
+下面是ServiceManager的时序图。
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/ServiceManager.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/ServiceManager.jpg" alt="" /></a>
 
 
-<a name="anchor0"></a>
-# Service Manager守护进程
 
-Service Manager是一个守护进程。它的main()函数源码如下：
+
+<a name="anchor_2nd"></a>
+# ServiceManager流程详解
+
+<a name="anchor1"></a>
+## 1. main()
+
+ServiceManager是一个守护进程。它的main()函数源码如下：
 
     int main(int argc, char **argv)
     {
@@ -46,20 +67,17 @@ Service Manager是一个守护进程。它的main()函数源码如下：
 
 说明：该代码定义在frameworks/native/cmds/servicemanager/service_manager.c中。main()主要进行了三项工作：  
 (01) 通过binder_open()打开"/dev/binder"文件，即打开Binder设备文件。  
-(02) 调用binder_become_context_manager(bs)，通过ioctl()告诉Binder驱动程序自己是Binder上下文管理者。  
+(02) 调用binder_become_context_manager()，通过ioctl()告诉Binder驱动程序自己是Binder上下文管理者。  
 (03) 调用binder_loop()进入消息循环，等待Client的请求。如果没有Client请求，则进入中断等待状态；当有Client请求时，就被唤醒，然后读取并处理Client请求。  
 
-> Service Manager是如何启动的？  
-> 这里简要介绍一下Service Manager的启动方式。当Kernel启动加载完驱动之后，会启动Android的init程序，init程序会解析init.rc，进而启动init.rc中定义的守护进程。而Service Manager则正是通过注册在init.rc中，而被启动的。    
+> ServiceManager是如何启动的？  
+> 这里简要介绍一下ServiceManager的启动方式。当Kernel启动加载完驱动之后，会启动Android的init程序，init程序会解析init.rc，进而启动init.rc中定义的守护进程。而ServiceManager则正是通过注册在init.rc中，而被启动的。 
 
 
 
 
-<a name="anchor1"></a>
-# 1. binder_open()的详细流程
-
-<a name="anchor1_1"></a>
-## 1.1 binder_open()的源码
+<a name="anchor2"></a>
+## 2. binder_open()
 
 下面，对main()的逐个步骤进行详细分析。先看看binder_open()，代码如下：
 
@@ -80,24 +98,17 @@ Service Manager是一个守护进程。它的main()函数源码如下：
         return bs;
     }
 
-说明： 该代码定义在frameworks/native/cmds/servicemanager/binder.c中。binder_open的作用是打开"/dev/binder"设备文件，然后调用mmap()将设备文件/dev/binder映射到进程空间的起始地址。  
+说明： 该代码定义在frameworks/native/cmds/servicemanager/binder.c中。binder_open的作用是打开"/dev/binder"设备文件，然后调用mmap()将设备文件"/dev/binder"映射到进程空间的起始地址。  
 (01) open("/dev/binder", O_RDWR)对应会调用驱动的open函数。  
 (02) mmap(NULL, mapsize, PROT_READ, MAP_PRIVATE, bs->fd, 0)对应会调用驱动的mmap函数。第一个参数是映射内存的起始地址，NULL代表让系统自动选定地址；mapsize大小是128*1024B，即128K；PROT_READ表示映射区域是可读的；MAP_PRIVATE表示建立一个写入时拷贝的私有映射，即，当进程中对该内存区域进行写入时，是写入到映射的拷贝中；bs->fd是"/dev/binder"句柄；而0表示偏移。  
-(03) binder_state结构体是来保存/dev/binder设备信息的。它的定义如下：
-
-    struct binder_state
-    {
-        int fd;
-        void *mapped;
-        unsigned mapsize;
-    };
-
-说明： fd是文件句柄，mmaped是映射内存的起始地址，mapsize映射内存大小。
+(03) binder_state结构体是来保存/dev/binder设备信息的。其中，fd是用来保存文件句柄，mmaped是映射内存的起始地址，mapsize映射内存大小。
 
 
 
-<a name="anchor1_2"></a>
-## 1.2 Binder驱动的注册信息
+<a name="anchor3"></a>
+## 3. open("/dev/binder")
+
+### 3.1 Binder驱动注册信息
 
 下面看看open("/dev/binder", O_RDWR)到底做了些什么。先看看下面的代码：
 
@@ -128,17 +139,16 @@ Service Manager是一个守护进程。它的main()函数源码如下：
     device_initcall(binder_init);
 
 说明：上面是Kernel中Binder驱动代码，定义在drivers/staging/android/binder.c中。  
-(01) device_initcall(binder_init)的作用是将binder_init()函数注册到Kernel的初始化函数列表中。当Kernel启动后，会按照一定的次序调用初始化函数列表；也就会执行binder_init()函数。  
+(01) device_initcall(binder_init)的作用是将binder_init()函数注册到Kernel的初始化函数列表中。当Kernel启动后，会按照一定的次序调用初始化函数列表，也就会执行binder_init()函数；执行binder_init()时便会加载Binder驱动。  
 (02) binder_init()函数中会通过misc_register(&binder_miscdev)将Binder驱动注册到文件节点"/dev/binder"上。在Linux中，一切都是文件！将Binder驱动注册到文件节点上之后，就可以通过操作文件节点进而对Binder驱动进行操作。而该文件节点"/dev/binder"的设备信息是binder_miscdev这个结构体对象。  
 (03) binder_miscdev变量是struct miscdevice类型。minor是次设备号，这个我们不需要关心；name是Binder驱动对应在/dev虚拟文件系统下的设备节点名称，也就是/dev/binder中的"binder"；fops是该设备节点的文件操作对象，它是我们需要重点关注的！fops指向binder_fops变量。  
 (04) binder_fops变量是struct file_operations类型。owner是标明了该文件操作变量的拥有者，就是该驱动；poll则指定了poll函数指针，当我们对/dev/binder文件节点执行poll()操作时，实际上就是调用的binder_poll()函数；同理，mmap()对应binder_mmap()，open()对应binder_open()，ioctl()对应binder_ioctl()...
 
+
+
+### 3.2 Binder驱动中的binder_open()函数源码
+
 经过上面的介绍，我们可以知道open("/dev/binder", O_RDWR)实际上是调用Binder驱动中的binder_open()函数。  
-
-
-
-<a name="anchor1_3"></a>
-## 1.3 Binder驱动中的binder_open()函数源码
 
     static HLIST_HEAD(binder_procs);
     ...
@@ -188,15 +198,19 @@ Service Manager是一个守护进程。它的main()函数源码如下：
         return 0;
     }
 
-说明：binder_proc是记录进程上下文信息的结构体，它的相关内容请参考[skywang-todo]。该函数的目的如下。  
-(01) 创建并初始化binder_proc结构体变量proc。binder_proc的目的是保存进程上下文信息。  
+说明：binder_proc是记录进程上下文信息的结构体，它的详细介绍请参考[Android Binder机制(二) Binder中的数据结构][link_binder_datastruct]。该函数的作用如下。  
+(01) 创建并初始化binder_proc结构体变量proc。binder_proc是描述Binder进程的上下文信息结构体。这里，就将ServiceManager进程的信息都存储到proc中。   
 (02) 将proc添加到全局哈希表binder_procs中。binder_procs不是我们关注的重点，也就不多说了。  
-(03) 将proc设为filp的私有成员。这样，在mmap()，ioctl等函数中，我们都可以根据filp的私有成员来获取proc信息。  
+(03) 将proc设为filp的私有成员。这样，在mmap()，ioctl()等函数中，我们都可以根据filp的私有成员来获取proc信息。  
 
 
 
-<a name="anchor1_4"></a>
-## 1.4 Binder驱动中的binder_mmap()源码
+<a name="anchor4"></a>
+## 4. mmap()
+
+分析完了open()，接下来看看mmap()。mmap()对应会调用Binder驱动的binder_mmap()函数。
+
+### 4.1 Binder驱动中的binder_mmap()源码
 
     static int binder_mmap(struct file *filp, struct vm_area_struct *vma)
     {
@@ -260,22 +274,22 @@ Service Manager是一个守护进程。它的main()函数源码如下：
     }
 
 说明：mmap的作用是进行内存映射。当应用调用mmap()映射内存到进程虚拟地址时，该函数会进行两个操作：第一，将指定大小的"物理内存" 映射到 "用户空间"(即，进程的虚拟地址中)。 第二，将该"物理内存" 也映射到 "内核空间(即，内核的虚拟地址中)"。  
-  简单来说，就是"将进程虚拟地址空间和内核虚拟地址空间映射同一个物理页面"。为什么要这么作呢？这就是Binder进程间通信机制的精髓所在了！在讲解之前，先简单介绍下进程间通信的基础知识。
+  简单来说，就是"将进程虚拟地址空间和内核虚拟地址空间映射同一个物理页面"。为什么要这么做呢？这就是Binder进程间通信机制的精髓所在了！在讲解之前，先回顾一下进程间通信的基础知识。
 
-> 在32位Linux系统的内存地址划分中，0~3G为用户空间，3~4G为内核空间。应用程序都运行在用户空间，而kernel和驱动都运行在内核空间。应用程序之间若涉及到数据交换(例如，Client进程向Server进程发送请求)，即进程间通信，需要使用管道/消息队列/Socket/共享内存等IPC机制。共享内存控制比较复杂，而Socket常用于网络通信，对于它们这里都不讨论，而只对管道/消息队列等方式进行介绍。如果采用管道/消息队列，需要先将Client进程的数据(位于用户空间)拷贝到内核空间，然后再从内核空间拷贝到Server进程(位于用户空间)中。这其中，总共涉及到了两次内存拷贝！
+> 在32位Linux系统的内存地址划分中，0~3G为用户空间，3~4G为内核空间。应用程序都运行在用户空间，而kernel和驱动都运行在内核空间。应用程序之间若涉及到数据交换(例如，Client进程向Server进程发送请求)，即进程间通信，需要使用管道/消息队列/Socket/共享内存等IPC机制。共享内存控制比较复杂，而Socket常用于网络通信，这里将它们排除；剩下的就是管道/消息队列。下面对管道/消息队列的IPC等通信方式进行介绍。假如现在采用管道/消息队列从Client向Server发送请求，需要先将Client进程的数据拷贝到内核空间，然后再从内核空间拷贝到Server进程中。这其中，总共涉及到了2次内存拷贝！  
+> 而Binder机制则只需要进行1次内存拷贝即可！
 
-而在Binder通信机制中，mmap()将Server进程的虚拟地址和内核虚拟地址映射到同一个物理页面。那么当Client进程向Server进程发送请求时，只需要将Client进程(位于用户空间)的数据拷贝到内核空间即可！因为，拷贝到内核空间，也就意味着拷贝到了Server进程的用户空间。
+在Binder通信机制中，mmap()会将Server进程的虚拟地址和内核虚拟地址映射到同一个物理页面。那么当Client进程向Server进程发送请求时，只需要将Client的数据拷贝到内核空间即可！由于Server进程的地址和内核空间映射到同一个物理页面，因此，Client中的数据拷贝到内核空间时，也就相当于拷贝到了Server进程中。因此，Binder通信机制中，数据传输时，只需要1次内存拷贝！
 
 <br/>
 有了上面的理论基础，再来看mmap()是如何实现的。  
 (01) proc = flip->private_data。该flip的私有数据是在binder_open()中设置的，这里通过该私有数据就获取binder_proc变量proc。  
-(02) area = get_vm_area(vma->vm_end - vma->vm_start, VM_IOREMAP)。 它的作用是从内核虚拟地址中，获取指定大小的空闲地址，将空闲地址的起始地址赋值给area。 area是vm_struct类型，vm_struct是描述内核虚拟地址信息的结构体；而vm_area_struct则是描述进程虚拟地址信息的结构体。  
+(02) area = get_vm_area(vma->vm_end - vma->vm_start, VM_IOREMAP)。 它的作用是从内核虚拟地址中，获取指定大小的空闲地址，将空闲地址的起始地址赋值给area。 area是vm_struct类型，vm_struct是描述内核虚拟地址信息的结构体。此外，vm_area_struct则是描述进程虚拟地址信息的结构体。  
 (03) 接着，给proc->buffer(内核空间地址)，proc->user_buffer_offset(内核空间地址和进程虚拟地址的偏移值)，proc->pages(内核空间所占物理页面的数目)，proc->buffer_size(内核地址空间的大小)赋值。  
-(04) 然后，调用binder_update_page_range(proc, 1, proc->buffer, proc->buffer + PAGE_SIZE, vma)。它作用是分配物理内存。  
+(04) 然后，调用binder_update_page_range(proc, 1, proc->buffer, proc->buffer + PAGE_SIZE, vma)。它作用是分配物理内存，下面看看它的实现。  
 
 
-<a name="anchor1_5"></a>
-## 1.5 Binder驱动中的binder_update_page_range()源码
+### 4.2 Binder驱动中的binder_update_page_range()源码
 
     static int binder_update_page_range(struct binder_proc *proc, int allocate,
                       void *start, void *end,
@@ -318,37 +332,38 @@ Service Manager是一个守护进程。它的main()函数源码如下：
       ...
     }
 
-说明： binder_update_page_range()即可分配物理页面，也可以释放物理页面。这里，我们只关心分配物理页面的部分。代码中已给出注释，这里就不再重复介绍了。  
+说明： binder_update_page_range()既可分配物理页面，也可以释放物理页面。当参数allocate=1时，会执行分配物理页面的操作；否则，会执行释放物理页面的操作。这里，allocate=1；因此，我们只关心分配物理页面的部分。  
+在for循环中，每分配一个物理页面都会先通过map_vm_area()将该物理内存映射到内核虚拟地址中；然后再将该物理页面插入到进程的虚拟地址空间。
 
 
-<br/>至此，binder_open(128*1024)算是介绍完了。它的作用：  
-(01) **C++层**：就是打开/dev/binder，同时映射物理内存到进程空间。  
-(02) **内核层**：新建并初始化该进程对应的binder_proc结构体，同时将内核虚拟地址和该进程的虚拟地址映射到同一物理内存中。
+<br/>至此，binder_open(128*1024)算是介绍完了。从"用户空间的ServiceManager进程" 和 "Binder驱动"这两个方面分析它的作用。  
+(01) **ServiceManager进程**：就是打开/dev/binder，同时映射物理内存到进程空间。  
+(02) **Binder驱动**：新建并初始化该进程对应的binder_proc结构体，同时将内核虚拟地址和该进程的虚拟地址映射到同一物理内存中。
 
 
 
-<a name="anchor2"></a>
-# 2. binder_become_context_manager()的详细流程
+<a name="anchor5"></a>
+## 5. binder_become_context_manager()
 
-<a name="anchor2_1"></a>
-## 2.1 binder_become_context_manager()的源码
-
-下面接着分析，binder_become_context_manager(bs)。
+下面接着分析binder_become_context_manager(bs)。
 
     int binder_become_context_manager(struct binder_state *bs)
     {
         return ioctl(bs->fd, BINDER_SET_CONTEXT_MGR, 0);
     }
 
-说明：根据前面介绍的Binder驱动初始化信息可知，ioctl就是调用Binder驱动中的binder_ioctl()函数。 
+说明：根据前面介绍的Binder驱动初始化信息可知，ioctl()就是调用Binder驱动中的binder_ioctl()函数。 
 
 
-<a name="anchor2_2"></a>
-## 2.2 Binder驱动中ioctl()的BINDER_SET_CONTEXT_MGR相关部分的源码
 
-    // 全局binder实体，准确点说是Service Manager的binder实体
+<a name="anchor6"></a>
+## 6. ioctl(, BINDER_SET_CONTEXT_MGR,)
+
+### 6.1 Binder驱动中binder_ioctl()的BINDER_WRITE_READ相关部分的源码
+
+    // 全局binder实体，准确点说是ServiceManager的binder实体
     static struct binder_node *binder_context_mgr_node;
-    // Service Manager守护进程的uid
+    // ServiceManager守护进程的uid
     static uid_t binder_context_mgr_uid = -1;
     static int binder_stop_on_user_error;
     ...
@@ -384,12 +399,12 @@ Service Manager是一个守护进程。它的main()函数源码如下：
           if (binder_context_mgr_uid != -1) {
               ...
           } else
-              // 设置Service Manager对应的uid
+              // 设置ServiceManager对应的uid
               binder_context_mgr_uid = current->cred->euid;
 
           // 新建binder实体，并将proc进程上下文信息保存到binder实体中；
           // 然后，将该binder实体赋值给全局变量binder_context_mgr_node。
-          // 这个全局的binder实体，是Service Manager对应的binder实体。
+          // 这个全局的binder实体，是ServiceManager对应的binder实体。
           binder_context_mgr_node = binder_new_node(proc, NULL, NULL);
           ...
 
@@ -416,19 +431,20 @@ Service Manager是一个守护进程。它的main()函数源码如下：
     }
 
 
-说明：binder_ioctl()的内容很多，上面仅仅列出相关代码。   
+说明：binder_ioctl()的内容很多，上面仅仅列出与BINDER_SET_CONTEXT_MGR相关的代码。   
 (01) proc = flip->private_data。该flip的私有数据是在binder_open()中设置的，这里通过该私有数据就获取binder_proc变量proc。  
-(02) 接着调用wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error < 2)。由于binder_stop_on_user_error是全局变量，它的初始值是0，因此binder_stop_on_user_error < 2为true，不进入中断等待而是直接跳过该函数。  
+(02) 接着调用wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error < 2)。由于binder_stop_on_user_error是全局变量，它的初始值是0，因此binder_stop_on_user_error < 2为true，不进入中断等待，而是直接跳过该函数继续运行。  
 (03) binder_get_thread()会在proc中查找当前线程对应的binder_thread结构体；由于之前还未创建该线程的binder_thread结构体，因此查找失败。进而创建一个binder_thread结构体变量，并将其添加到proc->threads红黑树中，然后返回该变量。  
-(04) cmd的值是我们调用ioctl()传入的参数BINDER_SET_CONTEXT_MGR。在BINDER_SET_CONTEXT_MGR分支中，会设置binder_context_mgr_uid，binder_context_mgr_uid是一个全局变量，它代表Service Manager对应的uid；接着，通过binder_new_node()新建一个binder实体(即binder_node结构体对象)，并将该binder实体赋值给全局变量binder_context_mgr_node，binder_context_mgr_node就是Serveice Manager对应的binder实体；最后，设置binder实体的引用计数等参数。  
-(05) 清除thread->looper的BINDER_LOOPER_STATE_NEED_RETURN标记。这个BINDER_LOOPER_STATE_NEED_RETURN标记，是在前面的binder_get_thread()中创建binder_thread对象时添加的。  
+(04) cmd的值是我们调用ioctl()传入的参数BINDER_SET_CONTEXT_MGR。在BINDER_SET_CONTEXT_MGR分支中，会设置binder_context_mgr_uid，binder_context_mgr_uid是一个全局变量，它代表ServiceManager对应的uid；接着，通过binder_new_node()新建一个Binder实体(即binder_node结构体对象)，并将该Binder实体赋值给全局变量binder_context_mgr_node，binder_context_mgr_node就是Serveice Manager对应的Binder实体；最后，设置binder实体的引用计数等参数。  
+(05) 清除thread->looper的BINDER_LOOPER_STATE_NEED_RETURN标记。这个BINDER_LOOPER_STATE_NEED_RETURN标记，是在调用binder_get_thread()中创建binder_thread对象时添加的。  
+
+关于binder_node结构体，在[Android Binder机制(二) Binder中的数据结构][link_binder_datastruct]中有消息的介绍。特别需要了解的是，对于每一个Server，Binder驱动都会为其分配一个binder_node对象。对于ServiceManager这个Binder上下文管理者而言，Binder驱动更是会将它的Binder实体保存到全局变量中。
 
 
 
-<a name="anchor2_3"></a>
-## 2.3 Binder驱动中的binder_get_thread()源码
+### 6.2 Binder驱动中的binder_get_thread()源码
 
-下面看看binder_get_thread()中到底做了什么。  
+下面看看binder_get_thread()中做了什么。
 
     static struct binder_thread *binder_get_thread(struct binder_proc *proc)
     {
@@ -475,12 +491,11 @@ Service Manager是一个守护进程。它的main()函数源码如下：
 
 说明：  
 (01) 理解"红黑树"和"rb_entry"是理解while循环的前提。这里简单介绍下，proc->threads这棵红黑树是根据proc->thread->pid来排序的；而rb_entry(parent, struct binder_thread, rb_node)的作用根据binder_thread结构体对象中的已知成员的地址(binder_thread->rb_node的地址，也就是parent的值)来获取binder_thread结构体对象的地址。  
-(02) 很显然，由于之前没有创建过当前线程对应的binder_thread对象，所以*p==null为true。那么，接下来就新建binder_thread对象，并对其进行初始化，并添加到红黑树proc->threads中。  
+(02) 很显然，由于之前没有创建过当前线程对应的binder_thread对象，所以*p==null为true。那么，接下来就新建binder_thread对象，并对其进行初始化，然后再添加到红黑树proc->threads中。
 
 
 
-<a name="anchor2_4"></a>
-## 2.4 Binder驱动中的binder_new_node()源码
+### 6.3 Binder驱动中的binder_new_node()源码
 
 下面看看binder_ioctl()中调用的binder_new_node()的代码。
 
@@ -528,21 +543,19 @@ Service Manager是一个守护进程。它的main()函数源码如下：
 
 
 <br/>至此，binder_become_context_manager()就介绍完了。它的作用：  
-(01) **C++层**：告诉Kernel驱动，当前进程(即Service Manager进程)是Binder上下文管理者。  
-(02) **内核层**：新建当前线程对应的binder_thread对象，并将其添加到进程上下文信息binder_proc的threads红黑树中；新建Service Manager对应的binder实体，并将该binder实体保存到全局变量binder_context_mgr_node中。
+(01) **ServiceManager进程**：告诉Kernel驱动，当前进程(即ServiceManager进程)是Binder上下文管理者。  
+(02) **Binder驱动**：新建当前线程对应的binder_thread对象，并将其添加到进程上下文信息binder_proc的threads红黑树中；新建ServiceManager对应的binder实体，并将该binder实体保存到全局变量binder_context_mgr_node中。
 
 
 
 
 
-<a name="anchor3"></a>
-# 3. binder_loop()的详细流程
+<a name="anchor7"></a>
+## 7. binder_loop()
 
 我们继续回到main()函数，分析一下binder_loop(bs, svcmgr_handler)。
 
-
-<a name="anchor3_1"></a>
-## 3.1 binder_loop()的源码
+### 7.1 binder_loop()的源码
 
     void binder_loop(struct binder_state *bs, binder_handler func)
     {
@@ -554,7 +567,7 @@ Service Manager是一个守护进程。它的main()函数源码如下：
         bwr.write_consumed = 0;
         bwr.write_buffer = 0;
         
-        // 告诉Kernel，Service Manager进程进入了消息循环状态。
+        // 告诉Kernel，ServiceManager进程进入了消息循环状态。
         readbuf[0] = BC_ENTER_LOOPER;
         binder_write(bs, readbuf, sizeof(unsigned));
         
@@ -573,16 +586,15 @@ Service Manager是一个守护进程。它的main()函数源码如下：
             res = binder_parse(bs, 0, readbuf, bwr.read_consumed, func);
             ...
         }
-    }   
+    }
 
 说明： 该代码定义在frameworks/native/cmds/servicemanager/binder.c中。  
-  binder_loop()首先调用binder_write(,BC_ENTER_LOOPER,)告诉Kernel，Service Manager进入了消息循环状态。紧接着，就通过ioctl(,BINDER_WRITE_READ,)进入消息循环，等待Client发送请求(例如，MediaPlayer进程调用addService将MeiaPlayer注册到Service Manager中进行管理)。如果没有消息，则进入中断等待状态；如果有消息，则进行消息处理！ 
+  binder_loop()首先调用binder_write(,BC_ENTER_LOOPER,)告诉Kernel，ServiceManager进入了消息循环状态。紧接着，就通过ioctl(,BINDER_WRITE_READ,)进入消息循环，等待Client发送请求(例如，MediaPlayer进程调用addService将MediaPlayer注册到ServiceManager中进行管理)。如果没有消息，则进入中断等待状态；如果有消息，则进行消息处理！ 
 
 
-<a name="anchor3_2"></a>
-## 3.2 binder_write()的源码
+### 7.2 binder_write()的源码
 
-下面我看看它到底是如何实现的。首先，调用binder_write(,BC_ENTER_LOOPER,)。
+下面看看binder_loop()中的binder_write(,BC_ENTER_LOOPER,)。
 
     int binder_write(struct binder_state *bs, void *data, unsigned len)
     {
@@ -602,11 +614,12 @@ Service Manager是一个守护进程。它的main()函数源码如下：
         return res;
     }
 
-说明：binder_write()单单只是向Kernel发送一个消息，而不会去读取消息反馈。
+说明：binder_write()单单只是向Kernel发送一个消息，而不会去读取消息反馈。这里的ioctl()又会调用到binder_ioctl()。  
+这里涉及到了Binder通信中常用的数据结构体binder_write_read。bwr.write_size>0，表示通过ServiceManager有数据(即BC_ENTER_LOOPER指令)发送给Binder驱动，而发送的数据就保存在bwr.write_buffer中，bwr.write_consumed则表示已经被读取并处理的数据的大小。bwr.read_XXX则是用来保存Binder驱动即将反馈给ServiceManager的信息的。   
+更多关于binder_write_read的介绍，请参考[Android Binder机制(二) Binder中的数据结构][link_binder_datastruct]。
 
 
-<a name="anchor3_3"></a>
-## 3.3 Binder驱动中binder_ioctl()的BINDER_WRITE_READ相关部分的源码
+### 7.3 Binder驱动中binder_ioctl()的BINDER_WRITE_READ相关部分的源码
 
 下面我们看看Binder驱动部分的对应代码。
 
@@ -671,16 +684,13 @@ Service Manager是一个守护进程。它的main()函数源码如下：
 说明：  
 (01) wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error < 2)中binder_stop_on_user_error < 2为true。因此，不进入中断等待状态而是直接跳过该函数。  
 (02) thread = binder_get_thread(proc)。由于在上一次调用ioctl时，已经创建了该线程对应的binder_thread对象。因此，这次能在proc->threads红黑树中找到对应的binder_thread对象，然后，返回给thread。  
-(03) copy_from_user()的作用是将用户空间的数据拷贝到内核空间。即，将Service Manager中调用ioctl(bs->fd, BINDER_WRITE_READ, &bwr)时的bwr对象拷贝到Binder驱动中。  
+(03) copy_from_user()的作用是将用户空间的数据拷贝到内核空间。即，将ServiceManager中调用ioctl(bs->fd, BINDER_WRITE_READ, &bwr)时的bwr对象拷贝到Binder驱动中。  
 (04) 在binder_write()中，设置的bwr.write_size>0；所以，调用binder_thread_write()进行写操作。  
 (05) 在binder_write()中，设置的bwr.read_size为0；所以，不调用binder_thread_read()进行读操作。  
 (06) 读写操作完毕之后，将bwr从内核空间再拷贝到用户空间。  
 
 
-<a name="anchor3_4"></a>
-## 3.4 Binder驱动中binder_thread_write的源码
-
-下面看看binder_thread_write()到底做了些什么。
+### 7.4 Binder驱动中binder_thread_write()的源码
 
     int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
               void __user *buffer, int size, signed long *consumed)
@@ -714,11 +724,15 @@ Service Manager是一个守护进程。它的main()函数源码如下：
       return 0;
     }
 
-说明：binder_thread_write()从brw.write_buffer中读取4个字节作为cmd，即BC_ENTER_LOOPER。  BC_ENTER_LOOPER分支中，就是将BINDER_LOOPER_STATE_ENTERED加入到thread->looper中。即，告诉Binder驱动，Service Manager进程进入了消息循环状态。
+说明：binder_thread_write()从brw.write_buffer中读取4个字节作为cmd。这4个字节就是ServiceManager传递的指令BC_ENTER_LOOPER。  
+在BC_ENTER_LOOPER对应的switch分支中，就是将BINDER_LOOPER_STATE_ENTERED加入到thread->looper中。即，告诉Binder驱动，ServiceManager进程进入了消息循环状态。
 
 
 
-我们继续回到binder_loop()中。接着，便进入了while(1)消息循环中。进入循环后，首先调用ioctl(,BINDER_WRITE_READ,)；此时，对应的bwr内容如下：
+<a name="anchor8"></a>
+## 8. for(;;)
+
+继续往下走。回到binder_loop()中后，便进入了for(;;)消息循环中。进入循环后，首先调用ioctl(,BINDER_WRITE_READ,)；此时，对应的bwr内容如下：
 
         bwr.write_size = 0;
         bwr.write_consumed = 0;
@@ -727,32 +741,14 @@ Service Manager是一个守护进程。它的main()函数源码如下：
         bwr.read_consumed = 0;
         bwr.read_buffer = (unsigned) readbuf;
 
-再次进入到Binder驱动ioctl()中。
+bwr.write_size=0，而bwr.read_size>0；表示只会从Binder驱动读取数据，而并不会向Binder驱动中写入数据。接着，调用ioctl()便再次进入到Binder驱动binder_ioctl()中。
 
 
-<a name="anchor3_5"></a>
-## 3.5 Binder驱动中binder_ioctl()的BINDER_WRITE_READ相关部分的源码
+### 8.1 Binder驱动中binder_ioctl()的BINDER_WRITE_READ相关部分的源码
 
     static long binder_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     {
-      int ret;
-      struct binder_proc *proc = filp->private_data;
-      struct binder_thread *thread;
-      unsigned int size = _IOC_SIZE(cmd);
-      void __user *ubuf = (void __user *)arg;
-
-      // 中断等待函数。
-      // 1. 当binder_stop_on_user_error < 2为true时；不会进入等待状态；直接跳过。
-      // 2. 当binder_stop_on_user_error < 2为false时，进入等待状态。
-      //    当有其他进程通过wake_up_interruptible来唤醒binder_user_error_wait队列，并且binder_stop_on_user_error < 2为true时；
-      //    则继续执行；否则，再进入等待状态。
-      ret = wait_event_interruptible(binder_user_error_wait, binder_stop_on_user_error < 2);
-
-      binder_lock(__func__);
-      // 在proc进程中查找该线程对应的binder_thread；若查找失败，则新建一个binder_thread，并添加到proc->threads中。
-      thread = binder_get_thread(proc);
       ...
-
       switch (cmd) {
       case BINDER_WRITE_READ: {
           struct binder_write_read bwr;
@@ -790,12 +786,11 @@ Service Manager是一个守护进程。它的main()函数源码如下：
       return ret;
     }
 
-说明：由于此次bwr.write_size=0，而bwr.read_size不为0。因此，在通过copy_from_user()将数据从用户空间拷贝到内核空间之后，不进行写操作，而只进行读操作，即执行binder_thread_read()。 在读操作执行完毕之后，再通过copy_to_user()，将数据返回给用户空间。  
+说明：由于此次bwr.write_size=0，而bwr.read_size不为0。因此，在通过copy_from_user()将数据从用户空间拷贝到内核空间之后，不进行写操作，而只进行读操作，即只执行binder_thread_read()。 在读操作执行完毕之后，再通过copy_to_user()，将数据返回给用户空间。  
 
 
 
-<a name="anchor3_6"></a>
-## 3.6 Binder驱动中binder_thread_read()的源码
+### 8.2 Binder驱动中binder_thread_read()的源码
 
     static int binder_thread_read(struct binder_proc *proc,
                     struct binder_thread *thread,
@@ -851,18 +846,29 @@ Service Manager是一个守护进程。它的main()函数源码如下：
   
 说明：  
 (01) 很显然，bwr.read_consumed=0。因此，*consumed=0，那么就将BR_NOOP拷贝到用户空间的bwr.read_buffer缓存区中。    
-(02) 很显然，目前线程的事务栈为空 并且 待处理事务列表为空时；因此，wait_for_proc_work为true。  
+(02) 目前为止，并没有进程将事务添加到当前线程中；因此，线程的事务栈和待处理事务队列都是为空。于是得到wait_for_proc_work的值是true。  
 (03) binder_set_nice()的作用是设置当前线程的优先级=proc->default_priority。  
-(04) 根据上下文，可知non_block为false。因此调用wait_event_interruptible_exclusive(proc->wait, binder_has_proc_work(proc, thread))。 而目前Service Manager进程中没有待处理事务，因此binder_has_proc_work(proc, thread)为false。从而当前线程进入中断等待状态，等待其它线程通过proc->wait将其唤醒。 
+(04) 根据上下文，可知non_block为false。因此调用wait_event_interruptible_exclusive(proc->wait, binder_has_proc_work(proc, thread))。 而目前ServiceManager进程中没有待处理事务，因此binder_has_proc_work(proc, thread)为false。从而当前线程进入中断等待状态，等待其它进程将ServiceManager唤醒。 
 
 
-<br/>至此，Service Manager进入了等待状态，binder_loop()就分析就暂告一段落。  
-(01) **C++层**：binder_loop()通过BC_ENTER_LOOPER告诉Kernel，Service Manager进入了消息循环状态。接着，Service Manager就进入等待状态，等待Client请求。  
-(02) **内核层**：已知Service Manager进入了消息循环状态；在收到Service Manager的BINDER_WRITE_READ消息之后，就去Service Manager的从进程上下文binder_proc对象中读取是否有待处理事务，由于没有事务处理，则将Service Manager线程设为中断等待状态。  
+<br/>至此，ServiceManager进入了等待状态，binder_loop()就分析就暂告一段落。  
+(01) **ServiceManager进程**：binder_loop()通过BC_ENTER_LOOPER告诉Kernel，ServiceManager进入了消息循环状态。接着，ServiceManager就进入等待状态，等待Client请求。  
+(02) **Binder驱动**：已知ServiceManager进入了消息循环状态；在收到ServiceManager的BINDER_WRITE_READ消息之后，就去ServiceManager的从进程上下文binder_proc对象中读取是否有待处理事务，由于没有事务处理，则将ServiceManager线程设为中断等待状态。  
 
 
 
-<br/>总的来说，Service Manager的main()进程完成了以下工作：  
-(01) **C++层**：打开Binder设备文件，映射物理内存到进程空间。然后，告诉Binder驱动自己是Binder上下文的管理者。最后，进入消息循环，等待Client请求。  
-(02) **内核层**：新建Server Manager进程对应的binder_proc，并将内核虚拟地址和进程虚拟地址映射到同一物理内存中。然后，新建当前线程对应的binder_thread对象，并将其添加到进程上下文信息binder_proc->threads红黑树中；得知该进程是Binder上下文管理者后，建立它对应的Binder实体，并将该Binder实体保存到全局变量中。最后，得知Service Manager进入消息循环，由于当前没有事务可处理，则进入中断等待状态，等待其他进程将其唤醒。
+<a name="anchor_3rd"></a>
+# ServiceManager流程总结
+
+总结上面的分析，ServiceManager的main()进程完成了以下工作。 
+
+1. 对于**ServiceManager进程**而言  
+它打开了Binder设备文件，并且将内存映射到ServiceManager的进程空间。然后，它告诉Binder驱动自己是Binder上下文的管理者。最后，进入消息循环，等待Client请求。
+
+2. 对于**Binder驱动**而言  
+初始化了ServiceManager对应的进程上下文环境(即binder_proc变量)，并将内核虚拟地址和进程虚拟地址映射到同一物理内存中。然后，新建当前线程对应的binder_thread对象，并将其添加到进程上下文信息binder_proc->threads红黑树中。在得知ServiceManager是Binder上下文管理者后，建立ServiceManager对应的Binder实体，并将该Binder实体保存到全局变量中。最后，得知ServiceManager进入消息循环后，由于当前线程中没有事务可处理，则进入中断等待状态，等待其他进程将其唤醒。
+
+
+
+[link_binder_datastruct]: /2014/09/02/Binder-Datastruct/
 

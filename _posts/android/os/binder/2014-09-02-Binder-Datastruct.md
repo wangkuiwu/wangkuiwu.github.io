@@ -105,7 +105,6 @@ binder_buffer是描述Binder进程所管理的每段内存的结构体。
 说明：binder_buffer是Binder驱动的私有结构体，它定义在drivers/staging/android/binder.c中。Binder驱动将Binder进程的内存分成一段一段进行管理，而这每一段则是使用binder_buffer来描述的。
 
 
-
 <a name="anchor1_3"></a>
 ## 1.3 binder_thread
 
@@ -149,7 +148,7 @@ binder_node是描述Binder实体的结构体。
         int local_weak_refs;
         int local_strong_refs;
         void __user *ptr;                   // Binder实体在用户空间的地址(为IBinder对象的引用)
-        void __user *cookie;                // Binder实体在用户空间的其他数据(为IBinder对象自身)
+        void __user *cookie;                // Binder实体在用户空间的其他数据
         unsigned has_strong_ref:1;
         unsigned pending_strong_ref:1;
         unsigned has_weak_ref:1;
@@ -161,9 +160,13 @@ binder_node是描述Binder实体的结构体。
     };
 
 说明：binder_node是Binder驱动的私有结构体，它定义在drivers/staging/android/binder.c中。binder_node是描述Binder实体相关信息的结构体。  
-(01) rb_node和dead_node属于一个union。如果该Binder实体还在使用，则通过rb-node将该节点链接到proc->nodes红黑树中；否则，则将Binder实体通过dead_node链接到全局哈希表binder_dead_nodes中。  
-(02) proc，它是binder_proc(进程上下文信息)结构体对象。目的是保存该Binder对象所属的Binder进程。  
+(01) rb_node和dead_node属于一个union。如果该Binder实体还在使用，则通过rb_node将该节点链接到proc->nodes红黑树中；否则，则将该Binder实体通过dead_node链接到全局哈希表binder_dead_nodes中。  
+(02) proc，它是binder_proc(进程上下文信息)结构体对象。目的是保存该Binder实体的进程。  
 (03) refs，它是该Binder实体的所有引用所组成的链表。
+
+在Binder驱动中，会为每一个Server都创建一个Binder实体，即会为每个Server都创建binder_node对象。ServiceManager的Binder实体会被保存到Binder驱动的全局变量中，而其他Server(例如，MediaPlayerService)的Binder实体则会被添加到"ServiceManager的Binder实体红黑树"中进行管理。  
+同样的，Binder驱动会为每个Client创建Binder引用，即会为每个Client创建binder_ref对象。  
+这样，"Binder实体"和"Binder引用" 分别是Server和Client在Binder驱动中的体现。 Client获取到Server对象后，"Binder引用所引用的Biner实体(即binder_ref.node)" 会指向 "Server对应的Biner实体"；同样的，Server被某个Client引用之后，"Server对应的Binder实体的引用列表(即，binder_node.refs)" 会指向 "Client对应的Binder引用"。
 
 
 
@@ -188,6 +191,13 @@ binder_ref是描述Binder引用的结构体。
     };
 
 说明：binder_ref是Binder驱动的私有结构体，它定义在drivers/staging/android/binder.c中。它是用来描述Binder引用的相关信息的。  
+(01) rb_node_desc和rb_node_node都是红黑树节点。通过rb_node_desc，Binder引用和binder_proc->refs_by_desc红黑树相关联；通过rb_node_node，Binder引用和binder_proc->refs_by_node红黑树相关联。  
+(02) node是该Binder引用所引用的Binder实体。而node_entry在是关联到该Binder实体的binder_node->refs哈希表中。  
+(03) proc，它是binder_proc(进程上下文信息)结构体对象。目的是保存该Binder引用所属的进程。  
+(04) desc是Binder引用的描述，实际上它就是Binder驱动为该Binder分配的一个唯一的int型整数。通过该desc，可以在binder_proc->refs_by_desc中找到该Binder引用，进而可以找到该Binder引用所引用的Binder实体等信息。  
+
+在Binder驱动中，会为每个Client创建对应的Binder引用，即会为每个Client创建binder_ref对象。这正如，Binder驱动会为每一个Server都创建一个Binder实体一样。  
+通过，"Binder实体"和"Binder引用" 就可以很好的将Server和Client关联起来：因为Binder实体和Binder引用分别是Server和Client在Binder驱动中的体现。 Client获取到Server对象后，"Binder引用所引用的Biner实体(即binder_ref.node)" 会指向 "Server对应的Biner实体"；同样的，Server被某个Client引用之后，"Server对应的Binder实体的引用列表(即，binder_node.refs)" 会指向 "Client对应的Binder引用"。
 
 
 

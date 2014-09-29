@@ -7,13 +7,57 @@ tags: [android]
 date: 2014-09-05 09:01
 ---
 
-
-> 本文会介绍Android的消息处理机制。  
+> 终于要开始讲解Client-Server交互了，若标题所示，本文要讲解的是addService请求。选取的题材是MediaPlayerService通过addService请求注册到ServiceManager中。  
+> 在这个addService请求中，MediaPlayerService是Client，而ServiceManager是Server。由于涉及到的过程比较复杂，这里将addService请求分为3篇进行说明，这3篇的主题分别是：请求的发送，请求的处理，以及请求的反馈。废话不多说，下面切入主题。
 
 > **目录**  
 > **1**. [Android消息机制的架构](#anchor1)  
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
+
+
+<a name="anchor1"></a>
+# 1. addService流程的概述
+
+[skywang-todo]
+
+上面是addService流程的时序图。理解这个图的前提是理解图中的三种角色之间的关系：  
+(01) MediaPlayerService和ServiceManager是两个不同的进程。它们位于用户空间，都有各自的内存单元，两者之间不能直接进行通信；因此，需要Binder驱动的帮助才能通信。  
+(02) Binder驱动位于内核空间，它映射到节点"/dev/binder"上。MediaPlayerService和ServiceManager都有通过open("/dev/binder")打开该节点，并通过mmap()将内存映射到各自所在的进程中；这也就是说MediaPlayerService能和Binder驱动通信，而且ServiceManager也能和Binder驱动通信。而在Binder驱动中，有全局变量，依靠这个全局变量，就能实现MediaPlayerService和ServiceManager之间的通信。  依靠的这个全局变量，就是[Android Binder机制(三) ServiceManager守护进程][link_binder_03_ServiceManagerDeamon]中介绍过的binder_context_mgr_node变量，它是ServiceManager的Binder实体。
+
+搞清楚它们三者之间的关系之后，再回到上面的时序图中。  
+1. WAIT  
+这表示ServiceManager进入了中断等待状态。它进入等待状态的详细流程，在[Android Binder机制(三) ServiceManager守护进程][link_binder_03_ServiceManagerDeamon]有介绍过。  
+
+2. BC_TRANSACTION  
+这是MediaPlayerService向ServiceManager发送addService请求对应的事务。这个事务是请求，而不是请求；因此是BC开发，B代表Binder，而C代表Command。如果是回复，则会以BR开发，R表示Reply。Binder驱动在收到BC_TRANSACTION之后，会将分配内存，将请求数据保存到所分配的内存中。
+
+3. WAKE_UP  
+MediaPlayerService通过BC_TRANSACTION提交一个注册请求给ServiceManager。因此，它会将该请求的内容发送给ServiceManager，并将ServiceManager唤醒。
+
+4. BR_TRANSACTION_COMPLETE  
+MediaPlayerService在发起了一个请求之后，它需要知道该请求是否发送成功。因此，Binder驱动在将该请求提交给ServiceManager之后，会反馈一个BR_TRANSACTION_COMPLETE给MediaPlayerService，表示它发送的请求已经被收到了。
+
+5. WAIT  
+MediaPlayerService在知道自己的请求已经发送成功之后，就进入等待状态，等待ServiceManager的反馈。
+
+6. BR_NOOP和BR_TRANSACTION  
+ServiceManager被唤醒之后，收到Binder驱动的BR_NOOP和BR_TRANSACTION指令。BR_NOOP指令什么也不会做，而在解析BR_TRANSACTION指令时，ServiceManager解析出该事务是添加服务请求，并将MediaPlayerService的相关信息保存到一个链表中。
+
+7. BC_FREE_BUFFER和BC_REPLY  
+ServiceManager在保存了MediaPlayerService的相关信息之后，便处理完毕了MediaPlayerService的请求。此时，它便反馈BC_FREE_BUFFER和BC_REPLY给Binder驱动。Binder驱动在收到BC_FREE_BUFFER之后，会释放保存请求数据所申请的内存；收到BC_REPLY之后，Binder驱动则知道ServiceManager已经处理完了MediaPlayerService的请求。  
+接着，它便会唤醒MediaPlayerService，并发送BR_NOOP和BR_REPLY给MediaPlayerService，告诉MediaPlayerService请求已经处理完毕。同时，它还会发送一个BR_TRANSACTION_COMPLETE给ServiceManager，告诉ServiceManager该事务已经处理完毕。  
+最后，ServiceManager处理MediaPlayerService的请求之后，没有其他事务可处理，便再次进入了等待状态。
+
+
+
+
+<a name="anchor2"></a>
+# 2. MediaPlayerService架构
+
+本文是以MediaPlayerService为例，对addService进行解析。下面看看MediaPlayerService的类图。
+
+[skywang-todo]
 
 
 
@@ -2630,3 +2674,4 @@ MediaPlayerService收到的Binder驱动的反馈包含了两个指令：BR_NOOP�
 
 
 
+[link_binder_03_ServiceManagerDeamon]: /2014/09/03/Binder-ServiceManager-Daemon/

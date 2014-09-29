@@ -204,6 +204,147 @@ date: 2014-09-07 09:03
         scanForFds();
     }
 
-说明： data就是Binder返回来的数据地址，而objectsCount则为0。先通过freeDataNoInit()将原始的数据清空，然后在给mData赋值，这样就将数据保存到了Parcel中。  
+说明： data就是Binder返回来的数据地址，而objectsCount则为1。先通过freeDataNoInit()将原始的数据清空，然后再给mData和mObjects赋值，这样就将数据保存到了Parcel中。  
+为什么objectsCount的值是1呢？请返回查看一下Service Manager在执行binder_send_reply()即可知，这里就不再多说。
+
+waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact()中；然后层层返回，直到退回到checkService()。  
+
+
+
+    virtual sp<IBinder> checkService( const String16& name) const
+    {
+        Parcel data, reply;             
+        data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor());               
+        data.writeString16(name);       
+        remote()->transact(CHECK_SERVICE_TRANSACTION, data, &reply);
+        return reply.readStrongBinder();
+    }     
+
+说明：到目前为止，通过transact()来获取MediaPlayerService的事务已经执行完毕！MediaPlayerService对应的数据都保存在replay中。接下来的工作就是调用reply.readStrongBinder()来从replay中解析出所需要的数据，即MediaPlayerService在Biner驱动中的Binder引用描述。
+
+
+    sp<IBinder> Parcel::readStrongBinder() const
+    {
+        sp<IBinder> val; 
+        unflatten_binder(ProcessState::self(), *this, &val);
+        return val; 
+    }
+
+说明：readStrongBinder()会调用unflatten_binder()来解析Parcel中的数据。
+
+
+    status_t unflatten_binder(const sp<ProcessState>& proc,
+        const Parcel& in, sp<IBinder>* out)
+    {
+        const flat_binder_object* flat = in.readObject(false);
+        
+        if (flat) {
+            switch (flat->type) {
+                case BINDER_TYPE_BINDER:
+                    ...
+                case BINDER_TYPE_HANDLE:
+                    *out = proc->getStrongProxyForHandle(flat->handle);
+                    return finish_unflatten_binder(
+                        static_cast<BpBinder*>(out->get()), *flat, in);
+            }        
+        }
+        return BAD_TYPE;
+    }
+
+说明：readObject()的作用是从Parcel中读取出它所保存的flat_binder_object类型的对象。该对象的类型是BINDER_TYPE_HANDLE，因此会指向BINDER_TYPE_HANDLE对应的switch分支。  
+(01) 这里的proc是ProcessState对象，执行proc->getStrongProxyForHandle()会将句柄(MediaPlayerService的Binder引用描述)保存到ProcessState的句柄链表中，然后再创建并返回该句柄的BpBinder对象(即Binder的代理)。在[skywang-todo]中有getStrongProxyForHandle()的详细说明，下面只给出getStrongProxyForHandle()代码。  
+(02) finish_unflatten_binder()中只有return NO_ERROR。
+
+
+    sp<IBinder> ProcessState::getStrongProxyForHandle(int32_t handle)
+    {
+        sp<IBinder> result;
+
+        AutoMutex _l(mLock);
+
+        // 在矢量数组中查找"句柄值为handle的handle_entry对象"；
+        // 找到的话，则直接返回；找不到的话，则新建handle对应的handle_entry。
+        handle_entry* e = lookupHandleLocked(handle);
+
+        if (e != NULL) {
+            IBinder* b = e->binder;
+            if (b == NULL || !e->refs->attemptIncWeak(this)) {
+                // 当handle==0(即是Service Manager的句柄)时，尝试去ping Binder驱动。
+                if (handle == 0) {
+                    Parcel data;
+                    status_t status = IPCThreadState::self()->transact(
+                            0, IBinder::PING_TRANSACTION, data, NULL, 0);
+                    if (status == DEAD_OBJECT)
+                       return NULL;
+                }
+
+                // 新建BpBinder代理
+                b = new BpBinder(handle);
+                e->binder = b;
+                if (b) e->refs = b->getWeakRefs();
+                result = b;
+            } else {
+                ...
+            }
+        }
+
+        return result;
+    }
+
+这样，getService()的内容就全部执行完毕。getService()的返回结果IBinder=BpBinder对象，该对象包含了"MediaPlayerService(在Binder驱动)中的Binder引用的描述"，该描述是个整型句柄。之后，若MediaPlayer要向MediaPlayerService发送请求，就根据该IBinder对象和"MediaPlayerService"进行通信。
+
+
+上面只是执行完了getService()，它返回了IBinder对象。但是，getMediaPlayerService()并没有执行完毕。
+
+
+    const sp<IMediaPlayerService>& IMediaDeathNotifier::getMediaPlayerService()
+    {
+        ...
+        if (sMediaPlayerService == 0) {
+            sp<IServiceManager> sm = defaultServiceManager();
+            sp<IBinder> binder;             
+            do {
+                binder = sm->getService(String16("media.player"));
+                ...
+                usleep(500000); // 0.5 s    
+            } while (true);                 
+
+            ...
+            sMediaPlayerService = interface_cast<IMediaPlayerService>(binder);
+        }     
+        ...
+        return sMediaPlayerService;         
+    }
+
+说明：在成功获取MediaPlayerService对应的IBinder对象(binder)之后，可以通过interface_cast<IMediaPlayerService>(binder)获取它的代理。  
+是不是对interface_cast()很熟悉！不错，在[skywang-todo]中就是通过该宏获取MediaPlayerService的代理的。
+
+    template<typename INTERFACE>
+    inline sp<INTERFACE> interface_cast(const sp<IBinder>& obj)
+    {
+        return INTERFACE::asInterface(obj);
+    }   
+
+下面直接给出IMediaPlayerService::asInterface()的代码。
+
+        android::sp<IMediaPlayerService> IMediaPlayerService::asInterface(
+                const android::sp<android::IBinder>& obj)
+        {
+            android::sp<IMediaPlayerService> intr;
+            if (obj != NULL) {
+                intr = static_cast<IMediaPlayerService*>(
+                    obj->queryLocalInterface(
+                            IMediaPlayerService::descriptor).get());
+                if (intr == NULL) {
+                    intr = new BpServiceManager(obj);
+                }
+            }
+            return intr;
+        }
+
+说明：asInterface()会调用new BpMediaPlayerService()新建BpServiceManager对象，并返回给对象。
+
+
+这样，MediaPlayer进程的getService请求就全部介绍完毕了。
 
 

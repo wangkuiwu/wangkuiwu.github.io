@@ -12,7 +12,9 @@ date: 2014-09-01 09:01
 
 
 
-# 1. Android为什么要采用Binder机制。
+
+
+# 2. Android为什么要采用Binder机制。
 
 Android系统是基于Linux内核而打造的操作系统。在Linux中，已经拥有"管道/消息队列/共享内存/信号量/Socket等"IPC通信手段，但是，Google还是使用了Binder来实现进程间通信，这说明Binder具有无可比拟的优势。
 

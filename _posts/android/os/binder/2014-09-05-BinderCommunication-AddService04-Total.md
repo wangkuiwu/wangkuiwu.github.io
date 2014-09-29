@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "Android Binder机制(三) 添加Server到Service Manager中"
+title: "Android Binder机制() 添加Server到Service Manager中"
 description: "android"
 category: android
 tags: [android]
-date: 2014-09-03 09:03
+date: 2014-09-05 09:05
 ---
 
 
