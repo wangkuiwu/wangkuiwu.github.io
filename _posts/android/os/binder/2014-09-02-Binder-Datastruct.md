@@ -30,14 +30,14 @@ TAG:SKYWANG-TODO
 <a name="anchor1_1"></a>
 ## 1.1 binder_proc
 
-binder_proc是描述Binder进程的上下文信息结构体。
+binder_proc是描述Binder进程上下文信息的结构体。Binder驱动的文件节点是"/dev/binder"，每当一个程序打开该文件节点时；Binder驱动中都会新建一个binder_proc对象来保存该进程的上下文信息。
 
     struct binder_proc {
       struct hlist_node proc_node;    // 根据proc_node，可以获取该进程在"全局哈希表binder_procs(统计了所有的binder proc进程)"中的位置
-      struct rb_root threads;         // binder_proc进程内用于处理用户请求的线程(关联binder_thread->rb_node)
-      struct rb_root nodes;           // binder_proc进程内的binder实体(关联binder_node->rb_node)
-      struct rb_root refs_by_desc;    // binder_proc进程内的binder引用，该引用以句柄来排序(关联binder_ref->rb_node_desc)
-      struct rb_root refs_by_node;    // binder_proc进程内的binder引用，该引用以它对应的binder实体的地址来排序(关联binder_ref->rb_node)
+      struct rb_root threads;         // binder_proc进程内用于处理用户请求的线程组成的红黑树(关联binder_thread->rb_node)
+      struct rb_root nodes;           // binder_proc进程内的binder实体组成的红黑树(关联binder_node->rb_node)
+      struct rb_root refs_by_desc;    // binder_proc进程内的binder引用组成的红黑树，该引用以句柄来排序(关联binder_ref->rb_node_desc)
+      struct rb_root refs_by_node;    // binder_proc进程内的binder引用组成的红黑树，该引用以它对应的binder实体的地址来排序(关联binder_ref->rb_node)
       int pid;                        // 进程id
       struct vm_area_struct *vma;     // 进程的内核虚拟内存
       struct mm_struct *vma_vm_mm;
@@ -57,7 +57,7 @@ binder_proc是描述Binder进程的上下文信息结构体。
       struct page **pages;            // 映射内存的page页数组，page是描述物理内存的结构体
       size_t buffer_size;             // 映射内存的大小
       uint32_t buffer_free;
-      struct list_head todo;          // 该进程的待处理事件列表。
+      struct list_head todo;          // 该进程的待处理事件队列。
       wait_queue_head_t wait;         // 等待队列。
       struct binder_stats stats;
       struct list_head delivered_death;
@@ -69,14 +69,14 @@ binder_proc是描述Binder进程的上下文信息结构体。
       struct dentry *debugfs_entry;
     };
 
-说明：binder_proc定义在drivers/staging/android/binder.c中，可见它是binder.c的私有结构体。它是用来记录进程的上下文信息的，每一个进程打开/dev/binder文件时，都会创建binder_proc结构体变量；从而将进程的相关信息保存在binder_proc中。  由于在结构体中已经有相关成员的注释，这里只对部分比较重要的成员进行说明。  
-(01) proc_node, 它的作用是通过proc_node，将该binder_proc添加到"全局哈希表binder_procs(它记录了所有的binder_proc)"。不管binder_procs在Kernel驱动中暂时没有太大用处，所以不用太过关注该成员。  
+说明：binder_proc定义在drivers/staging/android/binder.c中，可见它是binder.c的私有结构体。上面已经给出了相关成员的注释，这里只对部分比较重要的成员进行说明。  
+(01) proc_node, 它的作用是通过proc_node，将该binder_proc添加到"全局哈希表binder_procs(它记录了所有的binder_proc)"。不过binder_procs在Kernel驱动中暂时没有太大用处，所以不用太过关注该成员。  
 (02) threads，它是包含该进程内用于处理用户请求的所有线程的红黑树。threads成员和binder_thread->rb_node关联到一棵红黑树，从而将binder_proc和binder_thread关联起来。  
 (03) nodes，它是包行该进程内的所有Binder实体所组成的红黑树。nodes成员和binder_node->rb_node关联到一棵红黑树，从而将binder_proc和binder_node关联起来。  
 (04) refs_by_desc，它是包行该进程内的所有Binder引用所组成的红黑树。refs_by_desc成员和binder_ref->rb_node_desc关联到一棵红黑树，从而将binder_proc和binder_ref关联起来。  
 (05) refs_by_node，它是包行该进程内的所有Binder引用所组成的红黑树。refs_by_node成员和binder_ref->rb_node_node关联到一棵红黑树，从而将binder_proc和binder_ref关联起来。  
 (06) buffer，它是该进程内核虚拟内存的起始地址。而user_buffer_offset，则是该内核虚拟地址和进程虚拟地址之间的差值。在Binder驱动中，将进程的内核虚拟地址和进程虚拟地址映射到同一物理页面，该user_buffer_offset则是它们之间的差值；这样，已知其中一个，就可以根据差值算出另外一个。  
-(07) todo是该进程的待处理事务列表，而wait则是等待队列。它们的作用是实现进程的等待/唤醒。例如，当Server进程的wait等待队列为空时，Server就进入中断等待状态；当某Client向Server发送请求时，就将该请求添加到Server的todo待处理事务列表中，并尝试唤醒Server等待队列上的线程。如果，此时Server的待处理事务列表不为空，则Server被唤醒后；唤醒后，则取出待处理事务进行处理，处理完毕，则将结果返回给Client。  
+(07) todo是该进程的待处理事务队列，而wait则是等待队列。它们的作用是实现进程的等待/唤醒。例如，当Server进程的wait等待队列为空时，Server就进入中断等待状态；当某Client向Server发送请求时，就将该请求添加到Server的todo待处理事务队列中，并尝试唤醒Server等待队列上的线程。如果，此时Server的待处理事务队列不为空，则Server被唤醒后；唤醒后，则取出待处理事务进行处理，处理完毕，则将结果返回给Client。  
 
 
 <a name="anchor1_2"></a>
@@ -224,21 +224,49 @@ binder_write_read是描述Binder读写信息的结构体。
 <a name="anchor1_7"></a>
 ## 1.7 flat_binder_object
 
+flat_binder_object是描述Binder对象信息的结构体。
+
     struct flat_binder_object {
-        unsigned long       type;   // binder类型：BINDER_TYPE_BINDER或BINDER_TYPE_HANDLE等类型
+        unsigned long       type;   // binder类型：可以为BINDER_TYPE_BINDER或BINDER_TYPE_HANDLE等类型
         unsigned long       flags;  // 标记
 
         union {
-            void        *binder;    // 当传递的是Binder实体时使用binder域，它指向Binder实体在应用程序中的地址。
-            signed long handle;     // 当传递的是Binder引用时使用handle域，它存放Binder在进程中的引用号。
+            void        *binder;    // 当type=BINDER_TYPE_BINDER时，它指向Binder对象位于C++层的本地Binder对象(即BBinder对象)的弱引用。 
+            signed long handle;     // 当type=BINDER_TYPE_HANDLE时，它等于Binder对象在Binder驱动中对应的Binder实体的Binder引用的描述。
         };
 
-        /* extra data associated with local object */
-        void            *cookie;
+        void            *cookie;    // 当type=BINDER_TYPE_BINDER时才有效，它指向Binder对象位于C++层的本地Binder对象(即BBinder对象)。 
     };
 
+说明： flat_binder_object是用来描述Binder信息的结构体。它可以在C++层使用，也会在Binder驱动中使用。当它在C++层被使用时(例如，发送添加服务请求给servicemanager)，那么type的值一般都是BINDER_TYPE_BINDER，而此时对应的union中的binder的值是该Binder对象在C++层的本地Binder，即BBinder对象的引用；同时，cookie则是BBinder对象自身。  而当flat_binder_object在Binder驱动中被使用(例如，当Binder驱动收到发送服务请求时)，它会将该Binder对象对应的Binder实体，然后将type修改为BINDER_TYPE_HANDLE，然后将联合体中的handle修改为该Binder实体的Binder引用的描述。总体来说，在C++层，flat_binder_object是描述该Binder实体在C++层的存在形式；而在Binder驱动中，flat_binder_object则描述该Binder实体在Kernel中的存在形式。
 
 
+<a name="anchor1_8"></a>
+## 1.8 flat_binder_object
+
+// binder收发的数据包格式
+struct binder_transaction_data {
+    union {
+        size_t  handle; /* target descriptor of command transaction */
+        void    *ptr;   /* target descriptor of return transaction */
+    } target;               // 该事务的目标对象(即，该事务数据包是给该target来处理的)
+    void        *cookie;    
+    unsigned int    code;  
+
+    unsigned int    flags;
+    pid_t       sender_pid;
+    uid_t       sender_euid;
+    size_t      data_size;  /* number of bytes of data */
+    size_t      offsets_size;   /* number of bytes of offsets */
+
+    union {
+        struct {
+            const void  *buffer;
+            const void  *offsets;
+        } ptr;
+        uint8_t buf[8];
+    } data;
+};
 
 
 TODO
@@ -327,6 +355,8 @@ svcinfo是保存"注册到Service Manager中的服务"的相关信息的结构�
 
 <a name="anchor2_1"></a>
 ## 3.1 Parcel
+
+Parcel是保存封装Binder数据的结构体。
 
     class Parcel {
     public:

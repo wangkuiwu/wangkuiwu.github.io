@@ -8,8 +8,10 @@ date: 2014-09-03 09:03
 ---
 
 
-> ServiceManager是一个守护进程，它一直运行在后台。它的职责是管理Binder机制中的各个Server。当Server启动时，Server会将"Server对象"连同"Server对象的名字"一起注册到ServiceManager中；当Client需要获取Server对象时，则通过"Server对象的名字"从ServiceManager中找到对应的Server。  
-> 接下来，就是对ServiceManager进行介绍，通过它的启动流程来分析它是如何成为Server管理者的。
+> ServiceManager是一个守护进程，它一直运行在后台。它的职责是管理Binder机制中的各个Server。当Server启动时，Server会将"Server对象的名字"连同"Server对象"一起注册到ServiceManager中；而当Client需要获取Server对象时，则通过"Server对象的名字"来从ServiceManager中找到对应的Server。  
+> 本文的主要内容就是对ServiceManager进行介绍，通过它的启动流程来分析它是如何成为Server管理者的。
+
+> 注意：本文是基于Android 4.4.2版本进行介绍的！
 
 > **目录**  
 > **1**. [ServiceManager流程图](#anchor_1st)  
@@ -24,19 +26,15 @@ date: 2014-09-03 09:03
 > **2.8**. [for(;;)](#anchor8)  
 > **3**. [ServiceManager流程总结](#anchor_3rd)  
 
-> 注意：本文是基于Android 4.4.2版本进行介绍的！
-
 
 <a name="anchor_1st"></a>
 # ServiceManager流程图
 
-ServiceManager定义在frameworks/native/cmds/servicemanager/service_manager.c。  
-ServiceManager启动之后，会先打开"/dev/binder"文件；"/dev/binder"是Binder驱动注册的设备节点。打开文件之后，再告诉Binder驱动，它是Binder的上下文管理者。之后，就进入到了消息循环中。进入消息循环之后，会不断的从Binder的待处理事务队列中读取事务(Binder请求或反馈)，读出事务之后就进行解析并处理；若没有事务，则进入等待状态，等待Client唤醒。
-
-下面是ServiceManager的时序图。
 
 <a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/ServiceManager.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/ServiceManager.jpg" alt="" /></a>
 
+
+上面是ServiceManager的时序图。它启动之后，会先打开"/dev/binder"文件("/dev/binder"是Binder驱动注册的设备节点)。打开文件之后，再告诉Binder驱动，它是Binder的上下文管理者。之后，就进入到了消息循环中。进入消息循环之后，会不断的从Binder的待处理事务队列中读取事务(Binder请求或反馈)，读出事务之后就进行解析，然后交给相应的进程进行处理。若没有事务，则进入等待状态，等待被唤醒。
 
 
 
@@ -65,7 +63,7 @@ ServiceManager是一个守护进程。它的main()函数源码如下：
         return 0;
     }
 
-说明：该代码定义在frameworks/native/cmds/servicemanager/service_manager.c中。main()主要进行了三项工作：  
+说明：该代码在frameworks/native/cmds/servicemanager/service_manager.c中。main()主要进行了三项工作：  
 (01) 通过binder_open()打开"/dev/binder"文件，即打开Binder设备文件。  
 (02) 调用binder_become_context_manager()，通过ioctl()告诉Binder驱动程序自己是Binder上下文管理者。  
 (03) 调用binder_loop()进入消息循环，等待Client的请求。如果没有Client请求，则进入中断等待状态；当有Client请求时，就被唤醒，然后读取并处理Client请求。  
@@ -198,8 +196,8 @@ ServiceManager是一个守护进程。它的main()函数源码如下：
         return 0;
     }
 
-说明：binder_proc是记录进程上下文信息的结构体，它的详细介绍请参考[Android Binder机制(二) Binder中的数据结构][link_binder_datastruct]。该函数的作用如下。  
-(01) 创建并初始化binder_proc结构体变量proc。binder_proc是描述Binder进程的上下文信息结构体。这里，就将ServiceManager进程的信息都存储到proc中。   
+说明：binder_proc是记录进程上下文信息的结构体，它的详细介绍请参考[Android Binder机制(二) Binder中的数据结构][link_binder_02_datastruct]。该函数的作用如下。  
+(01) 创建并初始化binder_proc结构体变量proc。binder_proc是描述Binder进程的上下文信息结构体。这里，就是将ServiceManager这个进程的信息都存储到proc中。   
 (02) 将proc添加到全局哈希表binder_procs中。binder_procs不是我们关注的重点，也就不多说了。  
 (03) 将proc设为filp的私有成员。这样，在mmap()，ioctl()等函数中，我们都可以根据filp的私有成员来获取proc信息。  
 
@@ -438,7 +436,7 @@ ServiceManager是一个守护进程。它的main()函数源码如下：
 (04) cmd的值是我们调用ioctl()传入的参数BINDER_SET_CONTEXT_MGR。在BINDER_SET_CONTEXT_MGR分支中，会设置binder_context_mgr_uid，binder_context_mgr_uid是一个全局变量，它代表ServiceManager对应的uid；接着，通过binder_new_node()新建一个Binder实体(即binder_node结构体对象)，并将该Binder实体赋值给全局变量binder_context_mgr_node，binder_context_mgr_node就是Serveice Manager对应的Binder实体；最后，设置binder实体的引用计数等参数。  
 (05) 清除thread->looper的BINDER_LOOPER_STATE_NEED_RETURN标记。这个BINDER_LOOPER_STATE_NEED_RETURN标记，是在调用binder_get_thread()中创建binder_thread对象时添加的。  
 
-关于binder_node结构体，在[Android Binder机制(二) Binder中的数据结构][link_binder_datastruct]中有消息的介绍。特别需要了解的是，对于每一个Server，Binder驱动都会为其分配一个binder_node对象。对于ServiceManager这个Binder上下文管理者而言，Binder驱动更是会将它的Binder实体保存到全局变量中。
+关于binder_node结构体，在[Android Binder机制(二) Binder中的数据结构][link_binder_02_datastruct]中有消息的介绍。特别需要了解的是，对于每一个Server，Binder驱动都会为其分配一个binder_node对象。对于ServiceManager这个Binder上下文管理者而言，Binder驱动更是会将它的Binder实体保存到全局变量中。
 
 
 
@@ -616,7 +614,7 @@ ServiceManager是一个守护进程。它的main()函数源码如下：
 
 说明：binder_write()单单只是向Kernel发送一个消息，而不会去读取消息反馈。这里的ioctl()又会调用到binder_ioctl()。  
 这里涉及到了Binder通信中常用的数据结构体binder_write_read。bwr.write_size>0，表示通过ServiceManager有数据(即BC_ENTER_LOOPER指令)发送给Binder驱动，而发送的数据就保存在bwr.write_buffer中，bwr.write_consumed则表示已经被读取并处理的数据的大小。bwr.read_XXX则是用来保存Binder驱动即将反馈给ServiceManager的信息的。   
-更多关于binder_write_read的介绍，请参考[Android Binder机制(二) Binder中的数据结构][link_binder_datastruct]。
+更多关于binder_write_read的介绍，请参考[Android Binder机制(二) Binder中的数据结构][link_binder_02_datastruct]。
 
 
 ### 7.3 Binder驱动中binder_ioctl()的BINDER_WRITE_READ相关部分的源码
@@ -870,5 +868,5 @@ bwr.write_size=0，而bwr.read_size>0；表示只会从Binder驱动读取数据�
 
 
 
-[link_binder_datastruct]: /2014/09/02/Binder-Datastruct/
+[link_binder_02_datastruct]: /2014/09/02/Binder-Datastruct/
 

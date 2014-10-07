@@ -8,7 +8,11 @@ date: 2014-09-04 09:04
 ---
 
 
-> 本文会介绍Android的消息处理机制。  
+> 本文介绍defaultServiceManager()的流程。这里的defaultServiceManager()返回的是"IServiceManager对象"，获取"IServiceManager对象"的目的是为了和"ServiceManager进程"进行通信。例如，Server要通过"IServiceManager对象"发送请求指令注册到"ServiceManager进程"中，Client要通过"IServiceManager对象"发送请求来获取"Server对象"。   
+> 这里要搞清楚：**defaultServiceManager()获取到的，不是"ServiceManager进程"，而是"IServiceManager对象"**。"ServiceManager进程"是一个守护进程，而defaultServiceManager()获取到的是C++层的IServiceManager类的一个实例。当然，通过该defaultServiceManager()返回的"IServiceManager对象"是可以和ServiceManager进行通信的。
+
+> 注意：本文是基于Android 4.4.2版本进行介绍的！
+
 
 > **目录**  
 > **1**. [defaultServiceManager概述](#anchor1)  
@@ -26,37 +30,31 @@ date: 2014-09-04 09:04
 > **2.11**. [IPCThreadState::IPCThreadState()](#anchor2_11)  
 > **2.12**. [interface_cast()](#anchor2_12)  
 
-> 注意：本文是基于Android 4.4.2版本进行介绍的！
-
 
 <a name="anchor1"></a>
 # defaultServiceManager概述
 
 ## 1. defaultServiceManager流程图
 
-在[Android Binder机制(一) Binder的设计和框架]中说过，对于"MediaPlayerService等Server"以及"MediaPlayer等Client"而言，ServiceManager是一个Server服务端。  
-(01) 对MediaPlayerService等Server而言，它们要添加到ServiceManager中进行管理。因此，它们在启动时，都会发送addService请求给ServiceManager，请求注册到ServiceManager中。在这个过程中，MediaPlayerService是Client，而ServiceManager是Server。  
-(02) 对MediaPlayer等Client而言，它们要向MediaPlayerService发送请求，必须先通过ServiceManager来获取MediaPlayerService对象。因此，MediaPlayer要先发送getService请求给ServiceManager，请求获取到MediaPlayerService。在这个过程中，MediaPlayer是Client，而ServiceManager是Server。
-
-无论是MediaPlayerService等Server，还是MediaPlayer等Client，都需要和ServiceManager进行通信。但和ServiceManager通信，它们首先要获取到ServiceManager。defaultServiceManager()就是它们获取ServiceManager的接口，它也是本文将要介绍的重点。先看看defaultServiceManager()的时序图。
-
 <a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/defaultServiceManager.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/defaultServiceManager.jpg" alt="" /></a>
 
+上面是defaultServiceManager()的时序图。  
 defaultServiceManager()会返回一个sp<IServiceManager>类型的对象。IServiceManager提供了addService()供MediaPlayerService等服务注册到ServiceManager中，提供了getService()供MediaPlayer等MediaPlayer等客户端获取服务。  
 它首先会调用ProcessState::self()获取到ProcessState对象，该ProcessState对象是采用单例模式创建的；因此，当ProcessState::self()第一次被调用时，会新建ProcessState对象。在ProcessState的构造函数中，会先通过open_driver()打开"/dev/binder"，接着调用mmap()映射内存到当前进程中。此时，ProcessState就初始化完毕，它将"/dev/binder"的文件句柄以及映射内存都保存在自己的私有成员中。  
-在获取到ProcessState对象之后，会通过该对象调用getContextObject()来获取一个IBinder对象。getContextObject()会调用getStrongProxyForHandle(0)来获取"句柄0的强引用代理对象"，这里的句柄0被赋予了特殊意义；它就是ServiceManager的句柄，在Binder驱动中，若获取到句柄的值是0，则会将其目标当作是ServiceManager。getStrongProxyForHandle(0)会先通过lookupHandleLocked()在"ProcessState的矢量数组mHandleToObject"中查找句柄为0的对象；找不到的话，则新建句柄为0的对象，并将其添加到mHandleToObject矢量数组中；这样，下次再通过getStrongProxyForHandle()查找时，就能快速的找到。偶次可见，mHandleToObject是ProcessState中保存句柄的缓冲数组。  随后，会新建句柄0对应的BpBinder对象，BpBinder是IBinder的代理；这里就获取到了ServiceManager的IBinder代理对象BpBinder。简而言之，getContextObject()的目的就是获取ServiceManager对应的IBinder代理，即BpBinder对象。 在新建BpBinder时，会通过IPCThreadState::self()获取IPCThreadState对象；因为，需要通过IPCThreadState对象来与Binder驱动进行交互。  
-前面已经成功获取到了ServiceManager的IBinder代理，而defaultServiceManager()返回的是IServiceManager对象。这里，使用了一个技巧，通过宏interface_cast而调用asInterface()函数，从而返回IServiceManager的代理BpServiceManager。这样，defaultServiceManager()就执行完毕了。
+在获取到ProcessState对象之后，会通过该对象调用getContextObject()来获取一个IBinder对象。getContextObject()会调用getStrongProxyForHandle(0)来获取"句柄0的强引用代理对象"，这里的句柄0被赋予了特殊意义；它就是ServiceManager的句柄，在Binder驱动中，若获取到句柄的值是0，则会将其目标当作是ServiceManager。getStrongProxyForHandle(0)会先通过lookupHandleLocked()在"ProcessState的矢量数组mHandleToObject"中查找句柄为0的对象；找不到的话，则新建句柄为0的对象，并将其添加到mHandleToObject矢量数组中；这样，下次再通过getStrongProxyForHandle()查找时，就能快速的找到。由此可见，mHandleToObject是ProcessState中保存句柄的缓冲数组。  随后，会新建句柄0对应的BpBinder对象，BpBinder是IBinder的代理；这里就获取到了ServiceManager的BpBinder代理对象。简而言之，getContextObject()的目的就是获取ServiceManager对应的BpBinder代理对象。 在新建BpBinder时，会通过IPCThreadState::self()获取IPCThreadState对象；因为，需要通过IPCThreadState对象来与Binder驱动进行交互。  
+前面已经成功获取到了ServiceManager的BpBinder代理，而defaultServiceManager()返回的是IServiceManager对象。这里，使用了一个技巧，通过宏interface_cast而调用asInterface()函数，从而返回IServiceManager的代理BpServiceManager。这样，defaultServiceManager()就执行完毕了。
 
 
 在上面的流程中，涉及到了比较多的类。下面通过类图理清它们之间的关系。
 
 
+
+
 ## 2. defaultServiceManager相关类的类图
 
 
-<a href="skywang-todo"><img src="skywang-todo" alt="" /></a>
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/defaultServiceManager_leitu.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/defaultServiceManager_leitu.jpg" alt="" /></a>
 
-[skywang-todo]
 上面是获取defaultServiceManager()时涉及到的类的类图。defaultServiceManager()虽然在IServiceManager.cpp中实现，但它并不属于IServiceManager的成员方法，而是一个全局方法。
 
 1. RefBase  
@@ -66,23 +64,39 @@ defaultServiceManager()会返回一个sp<IServiceManager>类型的对象。IServ
 它定义在frameworks/native/include/binder/IInterface.h中。和RefBase类似，它也是一个公共父类，IInterface中声明了asBinder()方法，用于获取对象的IBinder对象。
 
 3. IBinder  
-它定义在frameworks/native/include/binder/IBinder.h中。对于IBinder这个类可以这样理解，它是Binder实体或Binder引用在Android的C++层的一个对象。在[Android Binder机制(一)][link_binder_01_introduce]中介绍Binder框架时，我们说过在Binder驱动中，对于每一个Server，Binder驱动都会创建一个Binder实体；而对于每一个Client，Binder都会创建一个Binder引用。当然，那是在Binder驱动中。在Android的C++中，就提供了IBinder这个抽象类，表示Binder实体或者Binder引用。  
-在IBinder中声明了像transact()这样的通用接口，通过transact()就可以和Binder驱动进行交互。当然，由于Binder机制采用了代理模式，因此IBinder的中声明的transact()等接口都是在代理类BpBinder中实现的。
+它定义在frameworks/native/include/binder/IBinder.h中。IBinder也是一个抽象出来的类，它包括了localBinder(), remoteBinder()和transact()等非常重要的接口。IBinder有两个直接子类类：BpBinder和BBinder。  
+BpBinder是Binder代理类。通过remoteBinder()可以获取BpBinder对象；而且，对于C++层而言，它相当于一个远程Binder。BpBinder的事务接口transact()会调用IPCThreadState的transact()，进而实现与Binder驱动的事务交互。此外，BpBinder中有一个mHandle句柄成员，它用来保存Server位于Binder驱动中的"Binder引用的描述"。句柄0是ServiceManager的句柄。   
+BBinder是本地Binder。通过localBinder()可以获取BBinder对象。当Server收到请求之后，会调用BBinder的onTransact()函数进行处理。而不同的Server会重载onTransact()函数，从而可以根据各自的情况对事务进行处理。
 
-4. BpBinder  
-它定义在frameworks/native/include/binder/BpBinder.h中声明，在frameworks/native/libs/binder/BpBinder.cpp中实现。BpBinder是IBinder的代理，它实现了IBinder中的接口。除此之外，它还拥有一个成员mHandle，该成员是该Binder对象在Binder驱动中的句柄。例如，当mHandle为0时，Binder驱动就将该目标当作是ServiceManager。
 
-5. BpInterface  
+4. BpInterface  
 它定义在frameworks/native/include/binder/IInterface.h中。实际上，BpInterface是一个<INTERFACE>模板类，同时继承了BpRefBase和INTERFACE，这里的INTERFACE是模板。像IServiceManager，IMediaPlayerService等Server都是通过继承模板类是实现的。  
 
-6. BpRefBase  
-它定义在frameworks/native/include/binder/Binder.h中。BpRefBase继承于RefBase，它有一个IBinder*类型的成员mRemote，同时提供了获取该mRemote的方法。
+5. BnInterface  
+它定义在frameworks/native/include/binder/IInterface.h中。和BpInterface类似，BnInterface也是一个<INTERFACE>模板类，它同时继承了BBinder和INTERFACE。像BnServiceManager，BnMediaPlayerService等本地Server都是通过继承模板类是实现的。  
 
+6. BpRefBase  
+它定义在frameworks/native/include/binder/Binder.h中。BpRefBase继承于RefBase，它有一个IBinder*类型的成员mRemote，同时提供了获取该mRemote的方法。实际上，该mRemote就是BpBinder对象。
+
+7. ProcessState   
+它定义在frameworks/native/libs/binder/ProcessState.cpp中中。ProcessState的实例是采用单例模式实现的，它拥有两个非常重要的成员：mDriverFD和mHandleToObject。  
+mDriverFD是文件"/dev/binder"的句柄，而mHandleToObject是一个Vector矢量数组，矢量数组中的每个元素都保存了两个变量：Server的句柄，以及Server对应的BpBinder对象。实际上，Server的句柄是"Server在Binder驱动中的Binder引用的描述"；句柄0是ServiceManager的句柄。 关于Binder引用，可以回顾[Android Binder机制(二) Binder中的数据结构][link_binder_02_datastruct]。
+
+8. IPCThreadState   
+它定义在frameworks/native/libs/binder/IPCThreadState.cpp中中。IPCThreadState的实例也是采用单例模式实现的，它是正在与Binder驱动进行交互的类。  
+
+<br/>
+理解上面几个类的基本概念之后，现在在从整体上对它们进行一下介绍！  
+对于一个Server而言，它都会存在一个"远程BpBinder对象"和"本地BBinder对象"。   
+(01) 远程BpBinder对象的作用，是和Binder驱动进行交互。具体的方式是，当Server要向Binder发起事务请求时，会调用BpBinder的transact()接口，而该接口会调用到IPCThreadState::transact()接口，通过IPCThreadState类来和Binder驱动交互。此外，该BpBinder在Binder驱动中的Binder引用的描述会被保存到ProcessState的mHandleToObject矢量缓冲数组中。  
+(02) 本地BBinder对象的作用，是Server响应Client请求的类。当Client有请求发送给Server时，都会调用到BBinder的onTransact()函数，而每个Server都会覆盖onTransact()函数。这样，每个Server就可以在onTransact()中根据自己的情况对请求进行处理。
 
 
 
 <a name="anchor2"></a>
 # defaultServiceManager流程详解
+
+接下来通过源码来查看defaultServiceManager()的实现。通过源码分析，会对上面的类图有更清楚的认识！
 
 <a name="anchor2_1"></a>
 ## 1. defaultServiceManager()
@@ -105,7 +119,7 @@ defaultServiceManager()会返回一个sp<IServiceManager>类型的对象。IServ
     }
 
 
-说明：该代码定义在frameworks/native/libs/binder/IServiceManager.cpp中。它是获取Service Manager的接口，该函数的声明在frameworks/native/include/binder/IServiceManager.h中。虽然defaultServiceManager()在IServiceManager.cpp文件中实现，但是它并不是IServiceManager的一个成员方法，而是一个全局方法。  
+说明：该代码定义在frameworks/native/libs/binder/IServiceManager.cpp中。它是获取IServiceManager对象，该函数的声明在frameworks/native/include/binder/IServiceManager.h中。虽然defaultServiceManager()在IServiceManager.cpp文件中实现，但是它并不是IServiceManager的一个成员方法，而是一个全局方法。  
 (01) gDefaultServiceManagerLock是全局互斥锁，gDefaultServiceManager是全局的IServiceManager对象。它们都定义在frameworks/native/libs/binder/Static.cpp中。  
 (02) gDefaultServiceManager是采用单例模式实现的，第一次调用该函数时，会创建gDefaultServiceManager对象。gDefaultServiceManager的实现可以简化为以下语句：
 
@@ -199,7 +213,7 @@ defaultServiceManager()会返回一个sp<IServiceManager>类型的对象。IServ
 (02) 在成功打开文件之后，就会调用ioctl检查Binder版本，检查版本的部分非常简单(就是读取出版本号，判断读取的版本号与已有的版本号是否一样!)，这里就不再对Binder驱动的BINDER_VERSION进行展开了。  
 (03) 在检查版本通过之后，在调用ioctl(,BINDER_SET_MAX_THREADS,)设置该进程的最大线程数。它会对应调用Binder驱动的binder_ioctl()函数。    
 
-**注意**：要区分"此处的open("/dev/binder",...)" 和 "Service Manager守护进程中也调用过open("/dev/binder",...)"。它们分别是属于不同的进程，每个进程打开"/dev/binder"文件后，Binder驱动都会创建相应的binder_proc对象来保存进程的上下文信息。
+**注意**：要区分"此处的open("/dev/binder",...)" 和 "ServiceManager守护进程中的open("/dev/binder",...)"。它们分别是属于不同的进程，本文的open("/dev/binder",...)是属于调用defaultServiceManager()的进程；而在ServiceManager中的open("/dev/binder",...)是属于ServiceManager进程的。
 
 
 
@@ -301,7 +315,7 @@ defaultServiceManager()会返回一个sp<IServiceManager>类型的对象。IServ
     }
 
 说明：getStrongProxyForHandle()的目的是返回句柄为handle的IBinder代理，这里是返回Service Manager的IBinder代理。  
-(01) lookupHandleLocked()，是在矢量数组mHandleToObject中查找是否有handler对应的handle_entry，有的话则返回；没有的话，则新建handle对应的handle_entry，并将其添加到矢量数组mHandleToObject中，然后再返回。mHandleToObject是用于保存各个IBinder代理对象的矢量数组，它相当于一个缓冲。  
+(01) lookupHandleLocked()，是在矢量数组mHandleToObject中查找是否有句柄为handle的handle_entry对象。有的话，则返回该handle_entry对象；没有的话，则新建handle对应的handle_entry，并将其添加到矢量数组mHandleToObject中，然后再返回。mHandleToObject是用于保存各个IBinder代理对象的矢量数组，它相当于一个缓冲。    
 (02) 很显然，此时e!=NULL为true，进入if(e!=NULL)中。而此时e->binder=NULL，并且handle=0；则调用IPCThreadState::self()->transact()尝试去和Binder驱动通信(尝试去ping内核中Binder驱动)。由于Binder驱动已启动，ping通信是能够成功的。ping通信涉及到"Binder机制中Server和Client的通信"，后面再专门对Server和Client的交互进行介绍；这里只要了解ping通信能够成功即可。  
 (03) 接着，新建BpBinder对象，并赋值给e->binder。然后，将该BpBinder对象返回。
 
@@ -342,7 +356,7 @@ defaultServiceManager()会返回一个sp<IServiceManager>类型的对象。IServ
         ...
     }
 
-说明：该代码定义在frameworks/native/include/binder/ProcessState.h中。
+说明：该代码定义在frameworks/native/include/binder/ProcessState.h中。前面说过，mHandleToObject是个缓冲矢量数组。它的成员binder是保存的Server的BpBinder对象，而refs是保存的Server在Binder驱动中的Binder引用的描述。
 
 
 
@@ -364,7 +378,7 @@ new BpBinder(0)会新建BpBinder对象，下面看看BpBinder的构造函数。
     }
 
 说明：该代码定义在frameworks/native/libs/binder/BpBinder.cpp中。主要工作是初始化。  
-(01) 将句柄handle保存到私有成员mHandle中。这里是将Service Manager的句柄保存到mHandle中。  
+(01) 将句柄handle保存到私有成员mHandle中。这里是将ServiceManager的句柄保存到mHandle中。  
 (02) 增加IPCThreadState的引用计数。IPCThreadState::self()是获取IPCThreadState对象，实际上，在前面介绍的ProcessState::getStrongProxyForHandle()中已经调用过该函数。下面看看它的代码。
 
 
@@ -581,4 +595,5 @@ IMPLEMENT_META_INTERFACE(ServiceManager, "android.os.IServiceManager");
 
 
 [link_binder_01_introduce]: /2014/09/01/Binder-Introduce/
+[link_binder_02_datastruct]: /2014/09/02/Binder-Datastruct/
 [link_binder_03_ServiceManagerDeamon]: /2014/09/03/Binder-ServiceManager-Daemon/
