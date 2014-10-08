@@ -8,24 +8,17 @@ date: 2014-09-07 09:02
 ---
 
 
-> 本文会介绍Android的消息处理机制。  
-
-> **目录**  
-> **1**. [Android消息机制的架构](#anchor1)  
+> 前面介绍了getService请求的发送部分，本文接着介绍请求的处理部分。下面看看ServiceManager被唤醒之后，是如何处理getService请求的
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
 
 
 <a name="anchor1"></a>
-# MediaPlayerService的main()函数
+# 1. Binder驱动中binder_thread_read()的源码
 
-前面说到，MediaPlayer线程在执行binder_transaction()时，会将一个待处理事务添加到"Service Manager的待处理事务队列"中；然后，再将Service Manager进程唤醒。
-
-下面，我们就接着[skywang-todo]中讲到的Service Manager休眠部分，讲讲Service Manager被唤醒之后做了些什么。
-
-## Binder驱动中binder_thread_read()的源码
-
+前面说到，MediaPlayer线程在执行binder_transaction()时，会将一个待处理事务添加到"ServiceManager的待处理事务队列"中；然后，再将ServiceManager进程唤醒。  
+下面，我们就接着看看ServiceManager被唤醒之后做了些什么。
 
     static int binder_thread_read(struct binder_proc *proc,
                     struct binder_thread *thread,
@@ -71,13 +64,13 @@ date: 2014-09-07 09:02
                 continue;
 
             // t->buffer->target_node是目标节点。
-            // 这里，MediaPlayer的getService请求的目标是Service Manager，因此target_node是Service Manager对应的节点；
+            // 这里，MediaPlayer的getService请求的目标是ServiceManager，因此target_node是Service Manager对应的节点；
             if (t->buffer->target_node) {
-                // 事务目标对应的Binder实体(即，Service Manager对应的Binder实体)
+                // 事务目标对应的Binder实体(即，ServiceManager对应的Binder实体)
                 struct binder_node *target_node = t->buffer->target_node;
-                // Binder实体在用户空间的地址(Service Manager的ptr为NULL)
+                // Binder实体在用户空间的地址(ServiceManager的ptr为NULL)
                 tr.target.ptr = target_node->ptr;
-                // Binder实体在用户空间的其它数据(Service Manager的cookie为NULL)
+                // Binder实体在用户空间的其它数据(ServiceManager的cookie为NULL)
                 tr.cookie =  target_node->cookie;
                 t->saved_priority = task_nice(current);
                 if (t->priority < target_node->min_priority &&
@@ -149,14 +142,18 @@ date: 2014-09-07 09:02
         return 0;
     }
 
-说明：Service Manager进程被唤醒之后，binder_has_thread_work()为true，因为Service Manager中有个待处理事务(即，MediaPlayer的getService求)。  
+说明：ServiceManager进程被唤醒之后，binder_has_thread_work()为true，因为ServiceManager中有个待处理事务(即，MediaPlayer的getService求)。  
 (01) 进入while循环后，首先取出待处理事务。  
-(02) 事务的类型是BINDER_WORK_TRANSACTION，得到对应的binder_transaction*类型指针t之后，跳出switch语句。很显然，此时t不为NULL，因此继续往下执行。下面的工作的目的，是将t中的数据转移到tr中(tr是事务交互数据包结构体binder_transaction_data对应的指针)，然后将指令和tr数据都拷贝到用户空间，让Service Manager读取后进行处理。此时的指令为BR_TRANSACTION！  
+(02) 事务的类型是BINDER_WORK_TRANSACTION，得到对应的binder_transaction*类型指针t之后，跳出switch语句。很显然，此时t不为NULL，因此继续往下执行。下面的工作的目的，是将t中的数据转移到tr中(tr是事务交互数据包结构体binder_transaction_data对应的指针)，然后将指令和tr数据都拷贝到用户空间，让ServiceManager读取后进行处理。此时的指令为BR_TRANSACTION！  
 (03) 最后，更新*consumed的值，即更新bwr.read_consumed的值。
 
 
-然后，binder_thread_read()会返回到binder_ioctl()中。binder_ioctl()在将数据bwr拷贝到用户空间之后会返回。这样，就又回到了Service Manager守护进程中。
+然后，binder_thread_read()会返回到binder_ioctl()中。binder_ioctl()在将数据bwr拷贝到用户空间之后会返回。这样，就又回到了ServiceManager守护进程中。
+ 
 
+
+<a name="anchor2"></a>
+# 2. binder_loop
 
     void binder_loop(struct binder_state *bs, binder_handler func)
     {
@@ -174,6 +171,9 @@ date: 2014-09-07 09:02
 
 说明：该代码在frameworks/native/cmds/servicemanager/binder.c中。Binder驱动共反馈了BR_NOOP和BR_TRANSACTION两个指令给Service Manager守护进程。BR_NOOP什么实质性的工作也不会做，我们直接分析BR_TRANSACTION的处理情况。
 
+
+<a name="anchor3"></a>
+# 3. binder_parse
 
     int binder_parse(struct binder_state *bs, struct binder_io *bio,
                      uint32_t *ptr, uint32_t size, binder_handler func)
@@ -217,8 +217,11 @@ date: 2014-09-07 09:02
     }
 
 说明：这里只关注BR_TRANSACTION分支。 首先，用bio_init()初始化reply。然后通过bio_init_from_txn()初始化msg。接着，是通过func函数指针对数据进行处理，func指向svcmgr_handler。处理完毕，再通过binder_send_reply()填写反馈信息给Binder驱动。  
-这里的大部分内容在[skywang-todo]中都介绍过，这里重点关注svcmgr_handler()处理getService请求的流程。
+这里的大部分内容在[Android Binder机制(六) addService详解02之 请求的处理][link_binder_05_addService02]中都介绍过，这里重点关注svcmgr_handler()处理getService请求的流程。
 
+
+<a name="anchor4"></a>
+# 4. svcmgr_handler
 
     int svcmgr_handler(struct binder_state *bs,
                        struct binder_txn *txn,
@@ -255,6 +258,8 @@ date: 2014-09-07 09:02
 (02) 然后，通过do_find_service()查找名称为s的IBinder对象。  
 
 
+<a name="anchor5"></a>
+# 5. do_find_service
 
     void *do_find_service(struct binder_state *bs, uint16_t *s, unsigned len, unsigned uid)
     {
@@ -283,12 +288,15 @@ date: 2014-09-07 09:02
     }
 
 说明：  
-(01) do_find_service()会调用find_svc()进行查找。在find_svc()中，会在svclist链表中查找是否有名称等于"media.player"的svcinfo对象。很显然，在[skywang-todo]中，已经将MediaPlayerService注册到svclist中，而MediaPlayerService的名称就是"media.player"。  
-(02) find_svc()找到svcinfo对象后返回到do_find_service()中。此时，if (si && si->ptr)为true，返回si->ptr。在[skywang-todo]中说过，这里的si->ptr就是MediaPlayerService在Binder驱动中的Binder引用的描述。根据该引用描述，就能找到对应的MediaPlayerService对象。
+(01) do_find_service()会调用find_svc()进行查找。在find_svc()中，会在svclist链表中查找是否有名称等于"media.player"的svcinfo对象。很显然，在[Android Binder机制(六) addService详解02之 请求的处理][link_binder_05_addService02]中，已经将MediaPlayerService注册到svclist中，而MediaPlayerService的名称就是"media.player"。  
+(02) find_svc()找到svcinfo对象后返回到do_find_service()中。此时，if (si && si->ptr)为true，返回si->ptr。这里的si->ptr就是MediaPlayerService在Binder驱动中的Binder引用的描述。根据该引用描述，就能找到对应的MediaPlayerService对象。
 
 
 随后，在成功获取Binder引用的描述之后，svcmgr_handler()会调用bio_put_ref()将该引用信息写入到binder_object中。
 
+
+<a name="anchor6"></a>
+# 6. bio_put_ref()
 
     void bio_put_ref(struct binder_io *bio, void *ptr)
     {
@@ -314,6 +322,10 @@ date: 2014-09-07 09:02
 
 
 在bio_put_ref()将数据打包到reply中之后，svcmgr_handle会调用binder_send_reply()将数据和指令整合到一起。
+
+
+<a name="anchor7"></a>
+# 7. binder_send_reply()
 
     void binder_send_reply(struct binder_state *bs,
                            struct binder_io *reply,
@@ -345,8 +357,11 @@ date: 2014-09-07 09:02
         binder_write(bs, &data, sizeof(data));
     }
 
-说明：binder_send_reply()在[skywang-todo]中已经介绍过。它共打包了两个指令：BC_FREE_BUFFER和BC_REPLY。在函数最后，它调用binder_write()和Binder驱动交互。
+说明：binder_send_reply()在[Android Binder机制(六) addService详解02之 请求的处理][link_binder_05_addService02]中已经介绍过。它共打包了两个指令：BC_FREE_BUFFER和BC_REPLY。在函数最后，它调用binder_write()和Binder驱动交互。
 
+
+<a name="anchor8"></a>
+# 8. binder_write()
 
     int binder_write(struct binder_state *bs, void *data, unsigned len)
     {
@@ -372,7 +387,8 @@ date: 2014-09-07 09:02
 再次回到Binder驱动的binder_ioctl()对应的BINDER_WRITE_READ分支中。此时，由于bwr.read_size=0，而bwr.write_size>0；因此，Binder驱动只调用binder_thread_write进行写操作，而不会进行读。
 
 
-## Binder驱动中binder_thread_write()的源码
+<a name="anchor9"></a>
+# 9. Binder驱动中binder_thread_write()的源码
 
     int binder_thread_write(struct binder_proc *proc, struct binder_thread *thread,
               void __user *buffer, int size, signed long *consumed)
@@ -417,6 +433,8 @@ date: 2014-09-07 09:02
 
 
 
+<a name="anchor10"></a>
+# 10. Binder驱动中binder_transaction()的源码
 
     static void binder_transaction(struct binder_proc *proc,
                        struct binder_thread *thread,
@@ -590,15 +608,23 @@ date: 2014-09-07 09:02
 
 说明：reply=1，这里只关注reply部分。  
 (01) 此反馈最终是要回复给MediaPlayer的。因此，target_thread被赋值为MediaPlayer所在的线程，target_proc则是MediaPlayer对应的进程，target_node为null。  
-(02) 这里，先看看for循环里面的内容，取出BR_REPLY指令所发送的数据，然后获取数据中的flat_binder_object变量fp。因为fp->type为BINDER_TYPE_HANDLE，因此进入BINDER_TYPE_HANDLE对应的分支。接着，通过binder_get_ref()获取MediaPlayerService对应的Binder引用；很明显，能够正常获取到MediaPlayerService的Binder引用。因为在MediaPlayerService调用addService请求时，已经创建了它的Binder引用。 binder_get_ref_for_node()的作用是在MediaPlayer进程上下文中添加"MediaPlayerService对应的Binder引用"。这样，后面就可以根据该Binder引用一步步的获取MediaPlayerService对象。 最后，将Binder引用的描述赋值给fp->handle。
+(02) 这里，先看看for循环里面的内容，取出BR_REPLY指令所发送的数据，然后获取数据中的flat_binder_object变量fp。因为fp->type为BINDER_TYPE_HANDLE，因此进入BINDER_TYPE_HANDLE对应的分支。接着，通过binder_get_ref()获取MediaPlayerService对应的Binder引用；很明显，能够正常获取到MediaPlayerService的Binder引用。因为在MediaPlayerService调用addService请求时，已经创建了它的Binder引用。 binder_get_ref_for_node()的作用是在MediaPlayer进程上下文中添加"MediaPlayerService对应的Binder引用"。这样，后面就可以根据该Binder引用一步步的获取MediaPlayerService对象。 最后，将Binder引用的描述赋值给fp->handle。  
 (03) 此时，Service Manager已经处理了getService请求。便调用binder_pop_transaction(target_thread, in_reply_to)将事务从"target_thread的事务栈"中删除，即从MediaPlayer线程的事务栈中删除该事务。  
 (04) 新建的"待处理事务t"的type为设为BINDER_WORK_TRANSACTION后，会被添加到MediaPlayer的待处理事务队列中。  
 (05) 此时，Service Manager已经处理了getService请求，而Binder驱动在等待它的回复。于是，将一个BINDER_WORK_TRANSACTION_COMPLETE类型的"待完成工作tcomplete"(作为回复)添加到当前线程(即，Service Manager线程)的待处理事务队列中。  
 (06) 最后，调用wake_up_interruptible()唤醒MediaPlayer。MediaPlayer被唤醒后，会对事务BINDER_WORK_TRANSACTION进行处理。
 
 
-OK，到现在为止，还有两个待处理事务：(01) Service Manager待处理事务列表中有个BINDER_WORK_TRANSACTION_COMPLETE类型的事务 (02) MediaPlayer待处理事务列表中有个BINDER_WORK_TRANSACTION事务。
+OK，到现在为止，还有两个待处理事务：(01) ServiceManager待处理事务列表中有个BINDER_WORK_TRANSACTION_COMPLETE类型的事务 (02) MediaPlayer待处理事务列表中有个BINDER_WORK_TRANSACTION事务。
 
-关于BINDER_WORK_TRANSACTION_COMPLETE事务，它是用来告诉Binder驱动，任务已经全部完成的。当Service Manager再次调用ioctl(,BINDER_WRITE_READ,)，并执行binder_thread_read()时，会读出BINDER_WORK_TRANSACTION_COMPLETE事务；然后，将该事务从待处理事务队列中删除，并释放内存。
+关于BINDER_WORK_TRANSACTION_COMPLETE事务，它是用来告诉ServiceManager，ServiceManager的反馈信息已经处理完毕。下一篇文章，就说说MediaPlayer被唤醒后，执行BINDER_WORK_TRANSACTION的流程。
 
-下面就说说MediaPlayer被唤醒后，执行BINDER_WORK_TRANSACTION的流程。
+
+
+[link_binder_01_introduce]: /2014/09/01/Binder-Introduce/
+[link_binder_02_datastruct]: /2014/09/02/Binder-Datastruct/
+[link_binder_03_ServiceManagerDeamon]: /2014/09/03/Binder-ServiceManager-Daemon/
+[link_binder_04_defaultServiceManager]: /2014/09/04/Binder-defaultServiceManager/
+[link_binder_05_addService01]: /2014/09/05/BinderCommunication-AddService01/
+[link_binder_05_addService02]: /2014/09/05/BinderCommunication-AddService02/
+[link_binder_05_addService03]: /2014/09/05/BinderCommunication-AddService03/

@@ -8,22 +8,16 @@ date: 2014-09-05 09:03
 ---
 
 
-> 本文会介绍Android的消息处理机制。  
+> 前面两篇文章分别介绍了addService中"请求的发送"和"请求的处理"这两部分，本文将介绍addService请求的最后一部分--请求的反馈。  
+> ServiceManager在处理完addService请求之后，添加了一个待处理事务到MediaPlayerService的事务列表中，并将MediaPlayerService唤醒。我们从上次MediaPlayerService休眠的地方开始，看看它被唤醒之后干了些什么。
 
-> **目录**  
-> **1**. [Android消息机制的架构](#anchor1)  
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
 
 
 <a name="anchor1"></a>
-# MediaPlayerService的
-
-
-
-
-[skywang-todo: tag]
+# 1. Binder驱动中binder_thread_read()的源码
 
     static int binder_thread_read(struct binder_proc *proc,
                     struct binder_thread *thread,
@@ -134,14 +128,19 @@ date: 2014-09-05 09:03
         return 0;
     }
 
-说明：MediaPlayerService进程被Service Manager唤醒，同时它的待处理事务队列中有Service Manager添加的事务；此时，binder_has_thread_work()为true。因此，MediaPlayerService会继续往下执行。  
+说明：MediaPlayerService进程被Service Manager唤醒，同时它的待处理事务队列中有ServiceManager添加的事务；此时，binder_has_thread_work()为true。因此，MediaPlayerService会继续往下执行。  
 (01) 进入while循环后，首先取出待处理事务。  
-(02) 事务的类型是BINDER_WORK_TRANSACTION，得到对应的binder_transaction*类型指针t之后，跳出switch语句。时t不为NULL，因此继续往下执行。下面的工作的目的，是将t中的数据转移到tr中(tr是事务交互数据包结构体binder_transaction_data对应的指针)，然后将指令和tr数据都拷贝到用户空间，让MediaPlayerService读取后进行处理。  
-binder_thread_read()的内容，前面已经详细介绍国了。这里说一下与前面不同的地方，由于这里的消息是要反馈给MediaPlayerService；因此，此时的cmd = BR_REPLY，在将事务对应的数据都拷贝到用户空间之后，会将事务删除。
+(02) 事务的类型是BINDER_WORK_TRANSACTION，得到对应的binder_transaction*类型指针t之后，跳出switch语句。时t不为NULL，因此继续往下执行。下面的工作的目的，是将t中的数据转移到tr中(tr是事务交互数据包结构体binder_transaction_data对应的指针)，然后将指令和tr数据都拷贝到用户空间，让MediaPlayerService读取后进行处理。此时的指令是BR_REPLY。
+
+binder_thread_read()执行完毕之后，共反馈了两个指令到用户空间：BR_NOOP和BR_REPLY
+
+现在回到MediaPlayerService位于用户空间的进程。它会逐个解析Binder驱动反馈的指令。  
+对于BR_NOOP，MediaPlayerService不会做任何实质性的动作。  
+对于BR_REPLY，看看MediaPlayerService的处理流程。
 
 
-MediaPlayerService收到的Binder驱动的反馈包含了两个指令：BR_NOOP和BR_REPLY。 BR_NOOP的处理过程，在前面已经介绍过了；实际上，BR_NOOP不会引起任何实质性的改变。接着，MediaPlayerService会解析出BR_REPLY指令，并对之进行处理。下面，只截取与BR_REPLY处理相关的部分进行说明。
-
+<a name="anchor2"></a>
+# 2. IPCThreadState::waitForResponse
 
     status_t IPCThreadState::waitForResponse(Parcel *reply, status_t *acquireResult)
     {
@@ -191,6 +190,9 @@ MediaPlayerService收到的Binder驱动的反馈包含了两个指令：BR_NOOP�
 说明：在BR_REPLY分支中，先读取出数据，并保存到tr中。由于reply不为null，并且tr.flags & TF_STATUS_CODE为0；因此，会执行reply->ipcSetDataReference()。
 
 
+<a name="anchor3"></a>
+# 3. Parcel::ipcSetDataReference
+
     void Parcel::ipcSetDataReference(const uint8_t* data, size_t dataSize,
         const size_t* objects, size_t objectsCount, release_func relFunc, void* relCookie)     
     {
@@ -208,9 +210,33 @@ MediaPlayerService收到的Binder驱动的反馈包含了两个指令：BR_NOOP�
     }
 
 说明：ipcSetDataReference()是根据参数的值重新初始化Parcel的数据和对象。  
-前面我们说过，Binder驱动反馈的BR_REPLY的数据中只有数字0而已。下面我们就看看ipcSetDataReference()的各个参数，data是数字0的地址，dataSize是数据大小；而数据中没有对象，因此objectsCount=0。  该函数会先调用freeDataNoInit()来释放已有的内存。然后再重新初始化mData和mDataSize等成员。
+(01) freeDataNoInit()的目的是释放原有的内存。为接下来保存Binder驱动反馈的数据做准备。  
+(02) 在[Android Binder机制(六) addService详解02之 请求的处理][link_binder_05_addService02]中，ServiceManager反馈数据时，我们知道它对应的BR_REPLY的数据实际上是空的！因此，这里的mDataSize和mObjectsSize都是0。
 
-在执行完该函数之后，MediaPlayerService的addService()请求层层返回。MediaPlayerService::instantiate()也就正式执行完了。
+实际上，Binder驱动反馈给MediaPlayerService的指令就是告诉它addService已经成功处理完毕！
+
+在MediaPlayerService解析完Binder驱动反馈的数据之后，它会层层向上返回。这样，MediaPlayerService::instantiate()也就正式执行完了！  
+MediaPlayerService::instantiate()执行完毕，但是MediaPlayerService进程似乎还没有进入消息循环中等到Client的请求！那么，它是何时进入消息循环的呢？回到MediaPlayerService进程的main()函数入口中，它后面是通过startThreadPool()进入消息循环的。这部分的内容，我们下一章再来介绍。
+
+    int main(int argc, char** argv)
+    {
+        ...
+
+        if (doLog && (childPid = fork()) != 0) {
+            ...
+        } else {
+            ...
+            MediaPlayerService::instantiate();
+            ...
+            ProcessState::self()->startThreadPool();
+            IPCThreadState::self()->joinThreadPool();
+        }
+    }
 
 
-
+[link_binder_01_introduce]: /2014/09/01/Binder-Introduce/
+[link_binder_02_datastruct]: /2014/09/02/Binder-Datastruct/
+[link_binder_03_ServiceManagerDeamon]: /2014/09/03/Binder-ServiceManager-Daemon/
+[link_binder_04_defaultServiceManager]: /2014/09/04/Binder-defaultServiceManager/
+[link_binder_05_addService01]: /2014/09/05/BinderCommunication-AddService01/
+[link_binder_05_addService02]: /2014/09/05/BinderCommunication-AddService02/

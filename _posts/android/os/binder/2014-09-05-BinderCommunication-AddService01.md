@@ -12,11 +12,6 @@ date: 2014-09-05 09:01
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
-> **目录**  
-> **1**. [addService流程的时序图](#anchor1)  
-> **2**. [IMediaPlayerService的类图](#anchor2)  
-> **3**. [addService请求发送的代码解析](#anchor3)  
-
 
 <a name="anchor1"></a>
 # 1. addService流程的时序图
@@ -97,7 +92,6 @@ IMediaPlayerService的类图和"[Android Binder机制(四) defaultServiceManager
             sp<IServiceManager> sm = defaultServiceManager();
             ...
             MediaPlayerService::instantiate();
-            ...
             ...
             ProcessState::self()->startThreadPool();
             IPCThreadState::self()->joinThreadPool();
@@ -357,7 +351,9 @@ IMediaPlayerService的类图和"[Android Binder机制(四) defaultServiceManager
 **mDataPos**：值为4，即下一个写入mData中的数据从第4个字节开始。  
 **mDataSize**：值为4，即mData中数据的大小。   
 **mDataCapacity**：值为6，即mData的数据容量为6字节。   
-此时，mData的数据如下图所示：[skywang-todo(data_01)]  
+此时，mData的数据如下图所示：
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add01.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add01.jpg" alt="" /></a>
 
 接下来，看看再writeString16("android.os.IServiceManager")如何将字符串写入到Parcel中。
 
@@ -394,8 +390,9 @@ IMediaPlayerService的类图和"[Android Binder机制(四) defaultServiceManager
 
 说明：writeString16()是重载函数。   
 (01) writeString16(str, len)中，str="android.os.IServiceManager"；len是由str.size()得来，虽然这里的字符串是String16类型(即每个字符占2个字节)，但是str.size()是获取str中有效数据的个数(不包含字符串结束符)，因此，len=26。  
-(02) 首先调用writeInt32(len)将字符串的长度写入到Parcel中，writeInt32()在前面已经介绍过了。当再次写入int32_t类型的数据时，数据容量不够，会再次增长为12，即mDataCapacity=12；而写入int32_t类型的数据之后，mDataPos和mDataSize都增长为8。 此时，mData的数据如下图所示：[skywang-todo]
+(02) 首先调用writeInt32(len)将字符串的长度写入到Parcel中，writeInt32()在前面已经介绍过了。当再次写入int32_t类型的数据时，数据容量不够，会再次增长为12，即mDataCapacity=12；而写入int32_t类型的数据之后，mDataPos和mDataSize都增长为8。 此时，mData的数据如下图所示：
 
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add02.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add02.jpg" alt="" /></a>
 
 在通过writeInt32(len)写入数据长度之后，再重新计算len=52；接着，通过writeInplace()写入数据。  
 
@@ -463,17 +460,17 @@ IMediaPlayerService的类图和"[Android Binder机制(四) defaultServiceManager
     }
 
 <br/>
-这样，data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor())就分析完了。此时，mData中数据如下：[skywang-todo]
+这样，data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor())就分析完了。此时，mData中数据如下图所示：
 
-
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add03.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add03.jpg" alt="" /></a>
 
 
 <a name="anchor3_15"></a>
 ## 15. Parcel::writeString16()
 
-继续回到addService()中，接着会通过data.writeString16(name)将MediaPlayerService服务的名称写入到data中，此处的name="media.player"。在前面已经详细介绍过writeString16()，这里执行完该语句后，mData中的数据如下：[skywang-todo]
+继续回到addService()中，接着会通过data.writeString16(name)将MediaPlayerService服务的名称写入到data中，此处的name="media.player"。在前面已经详细介绍过writeString16()，这里执行完该语句后，mData中的数据如下：
 
-
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add04.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add04.jpg" alt="" /></a>
 
 
 接着，addService()会调用data.writeStrongBinder(service)将MediaPlayerService对象写入到data中。这个数据最重要，下面分析下writeStrongBinder()的实现。  
@@ -593,12 +590,14 @@ IMediaPlayerService的类图和"[Android Binder机制(四) defaultServiceManager
 (04) mObjects[mObjectsSize]=mDataPos，此处的mObjectsSize=0；这里是将对象的地址偏移mDataPos保存到mObjects[0]中。随后执行mObjectsSize++增加mObjectsSize的值为1。  
 (05) 最后，调用finishWrite()更新mDataPos和mDataSize的值。
 
-<br/>至此，data.writeStrongBinder()就分析完了。将MediaPlayerService写入data之后，它的数据如下所示：[skywang-todo]
+<br/>至此，data.writeStrongBinder()就分析完了。将MediaPlayerService写入data之后，它的数据如下图所示：
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add05.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add05.jpg" alt="" /></a>
 
 
+最后，调用data.writeInt32(allowIsolated ? 1 : 0)。allowIsolated为false，因此，data.writeInt32(0)。执行该函数之后，data的数据如下图所示：
 
-最后，调用data.writeInt32(allowIsolated ? 1 : 0)。allowIsolated为false，因此，data.writeInt32(0)。执行该函数之后，data的数据如下所示：[skywang-todo]
-
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add06.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/parcel_add06.jpg" alt="" /></a>
 
 以上就是addService()中的data的数据。接下来执行remote()->transact(ADD_SERVICE_TRANSACTION, data, &reply)。前面已经说过，remote()返回的是BpBinder对象，该BpBinder对象是在[Android Binder机制(四) defaultServiceManager()的实现][link_binder_04_defaultServiceManager]中调用defaultServiceManager()时初始化的。下面查看BpBinder的transact()。
 
@@ -716,7 +715,9 @@ IMediaPlayerService的类图和"[Android Binder机制(四) defaultServiceManager
     tr.offsets_size = data.ipcObjectsCount()*sizeof(size_t); // data中保存的对象个数(对应mObjectsSize)
     tr.data.ptr.offsets = data.ipcObjects();                 // data中保存的对象的偏移地址数组(对应mObjects)
 
-初始化tr之后，将cmd=BC_TRANSACTION和tr重新打包到mOut中。mOut中的数据将来会被以请求的方式发送给Binder驱动。重新打包后的数据如下图所示[skywang-todo(data_01)]：
+初始化tr之后，将cmd=BC_TRANSACTION和tr重新打包到mOut中。mOut中的数据将来会被以请求的方式发送给Binder驱动。重新打包后的数据如下图所示：
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/data_01.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/data_01.jpg" alt="" /></a>
 
 在上图中，mOut包含了"事务指令"+"binder_transaction_data"结构体对象。而具体的MediaPlayerService对象，则包含在binder_transaction_data的data数据区域；它是被封装在flat_binder_object结构体中的。
 
@@ -834,7 +835,7 @@ writeTransactionData()分析完毕之后，再看看waitForResponse()的代码�
 
 说明：talkWithDriver()会先初始化bwr(binder_write_read类型的变量)，然后将bwr变量通过ioctl()发送给Binder驱动。该函数的参数doReceive的默认值为true。  
 (01) 现在，mIn中还没有被写入数据，因此它的值都是初始值。那么，mIn.dataPosition()返回mDataPos，它的值为0；mIn.dataSize()返回mDataSize，它的初始值也为0。因此，needRead=true。  
-(02) doReceive=true，但是needRead=true；因此，outAvail=mOut.dataSize，outAvail不为0。接下来，就对bwr进行初始化，关于bwr的介绍，请参考[skywang-todo]。bwr初始化完毕之后，各个成员的值如下：  
+(02) doReceive=true，但是needRead=true；因此，outAvail=mOut.dataSize，outAvail不为0。接下来，就对bwr进行初始化，关于bwr的介绍，请参考[Android Binder机制(二) Binder中的数据结构][link_binder_02_datastruct]。bwr初始化完毕之后，各个成员的值如下：  
 
     bwr.write_size = outAvail;                          // mOut中数据大小，大于0
     bwr.write_buffer = (long unsigned int)mOut.data();  // mOut中数据的地址
@@ -845,7 +846,9 @@ writeTransactionData()分析完毕之后，再看看waitForResponse()的代码�
 
 (03) bwr初始化完成之后，调用ioctl(,BINDER_WRITE_READ,)和Binder驱动进行交互。
 
-通过binder_write_read再次打包后的数据如下图所示[skywang-todo(data_02)]：
+通过binder_write_read再次打包后的数据如下图所示：
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/data_02.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/data_02.jpg" alt="" /></a>
 
 如上图所示，ioctl()传输的数据包含"BINDER_WRITE_READ"+"binder_write_read结构体对象"。在binder_write_read的write_buffer中包含了事务数据；而在数据数据的data中又包含了flat_binder_object等数据。在flat_binder_object中就包含了需要传输的MediaPlayerService对象。  
 总体来看，数据经过了三次封装。下面看看在Binder驱动中是如何一层层将它们剖析开来的。
@@ -1769,7 +1772,9 @@ bwr中的write_*参数是保存"MediaPlayerService发送给Binder驱动的请求
 
 
 <br>
-至此，MediaPlayerService进程的addService的请求发送部分就讲解完了。在继续了解请求的处理之前，先回顾一下本部分的内容。[skywang-todo(addservice01)]
+至此，MediaPlayerService进程的addService的请求发送部分就讲解完了。在继续了解请求的处理之前，先回顾一下本部分的内容。
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/addService01_send.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/addService01_send.jpg" alt="" /></a>
 
 如上图所示，MediaPlayerService发送一个BC_TRANSACTION事务给Binder驱动。Binder驱动收到该事务之后，对请求数据进行解析，在Kernel中新建了MediaPlayerService对应的Binder实体，并将在ServiceManager的进程上下文中添加了该Binder实体的Binder引用。解析完数据之后，新增一个待处理事务并提交到ServiceManager的待处理事务列表中；接着，就唤醒了ServiceManager。与此同时，Binder驱动还反馈了一个BR_TRANSACTION_COMPLETE给MediaPlayerService，告诉MediaPlayerService它的addService请求已经发送成功；MediaPlayerService在解析完BR_TRANSACTION_COMPLETE之后，就进入等待状态，等待ServiceManager的处理完请求之后反馈结果给它。
 

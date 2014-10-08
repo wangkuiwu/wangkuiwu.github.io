@@ -8,7 +8,7 @@ date: 2014-09-01 09:01
 ---
 
 
-> 这是关于Android中Binder机制的一系列纯技术贴。我花了一个多礼拜的时间，才终于将其整理完毕。行文于此，以做记录；也是将自己所得分享出来。  
+> 这是关于Android中Binder机制的一系列纯技术贴。花了一个多礼拜的时间，才终于将其整理完毕。行文于此，以做记录；也是将自己所得与大家分享。  
 > 和以往一样，介绍Binder时，先讲解框架，然后再从设计和细节等方面一一展开。若文章若错误或纰漏，请不吝指出。谢谢！
 
 > **目录**  
@@ -21,7 +21,10 @@ TAG:SKYWANG-TODO
 
 
 <a name="anchor1"></a>
-# 1. Binder架构
+# 1. Binder架构简介
+
+<a name="anchor1_1"></a>
+## 1.1 Binder架构图
 
 [skywang-todo]
 
@@ -32,8 +35,8 @@ Binder机制的目的**是实现IPC(Inter-Process Communication)，即实现进�
 
 
 
-<a name="anchor1_1"></a>
-## 1.1 Binder驱动存在的原因和意义
+<a name="anchor1_2"></a>
+## 1.2 Binder驱动存在的原因和意义
 
 在回答"Binder机制中Binder驱动存在的原因和意义"之前，先介绍几个基本的概念。
 
@@ -58,8 +61,8 @@ Android的通信是基于Client-Server架构的，进程间的通信无非就是
 
 
 
-<a name="anchor1_2"></a>
-## 1.2 ServiceManager存在的原因和意义
+<a name="anchor1_3"></a>
+## 1.3 ServiceManager存在的原因和意义
 
 Binder是要实现Android的C-S架构的，即Client-Server架构。而ServiceManager的存在，则是为了更好的实现C-S架构。
 
@@ -73,14 +76,14 @@ ServiceManager也是运行在用户空间的一个独立进程。
 
 
 
-<a name="anchor2"></a>
-## 2. 为什么采用Binder机制，而不是其他的IPC通信方式
+<a name="anchor1_4"></a>
+## 1.4 为什么采用Binder机制，而不是其他的IPC通信方式
 
 前面说过，Android是在Linux内核的基础上设计的。而在Linux中，已经拥有"管道/消息队列/共享内存/信号量/Socket等等"众多的IPC通信手段；但是，Google为什么单单选择了Binder，而不是其它的IPC机制呢？
 
-这肯定是因为Binder具有无可比拟的优势。下面就从 "实用性(Client-Server架构)/传输效率/操作复杂度/安全性" 等几方面进行分析。  
+这肯定是因为Binder具有无可比拟的优势。下面就从 "实用性(Client-Server架构)/传输效率/操作复杂度/安全性" 等几方面进行分析。
 
-1. **Binder能够很好的实现Client-Server架构**
+### 第一. Binder能够很好的实现Client-Server架构
 
 对于Android系统，Google想提供一套基于Client-Server的通信方式。  
 例如，将"电池信息/马达控制/wifi信息/多媒体服务"等等不同的服务都由不同的Server提供，当Client需要获取某Server的服务时，只需要Client向Server发送相应的请求，Server收到请求之后进行处理，处理完毕再将反馈内容发送给Client。
@@ -88,17 +91,17 @@ ServiceManager也是运行在用户空间的一个独立进程。
 但是，目前Linux支持的"传统的管道/消息队列/共享内存/信号量/Socket等"IPC通信手段中，只有Socket是Client-Server的通信方式。但是，Socket主要用于网络间通信以及本机中进程间的低速通信，它的传输效率太低。
 
 
-2. **Binder的传输效率和可操作性很好**
+### 第二. Binder的传输效率和可操作性很好
 
 前面已经说了，Socket传输效率很低，已经被排除。而消息队列和管道又采用存储-转发方式，使用它们进行IPC通信时，需要经过2次内存拷贝！效率太低！
 
 为什么消息队列和管道的数据传输需要经过2次内存拷贝呢？ 首先，数据先从发送方的缓存区(即，Linux中的用户存储空间)拷贝到内核开辟的缓存区(即，Linux中的内核存储空间)中，是第1次拷贝。接着，再从内核缓存区拷贝到接收方的缓存区(也是Linux中的用户存储空间)，这是第2次拷贝。  
 而采用Binder机制的话，则只需要经过1次内存拷贝即可！ 即，从发送方的缓存区拷贝到内核的缓存区，而接收方的缓存区与内核的缓存区是映射到同一块物理地址的，因此只需要1次拷贝即可。
 
-至于共享内存呢，虽然使用它进行IPC通信时进行的内存拷贝次数是0。但是，共享内存操作复杂，也将它排除。  
+至于共享内存呢，虽然使用它进行IPC通信时进行的内存拷贝次数是0。但是，共享内存操作复杂，也将它排除。
 
 
-3. **Binder机制的安全性很高**
+### 第三. Binder机制的安全性很高
 
 传统IPC没有任何安全措施，完全依赖上层协议来确保。传统IPC的接收方无法获得对方进程可靠的UID/PID(用户ID/进程ID)，从而无法鉴别对方身份。而Binder机制则为每个进程分配了UID/PID来作为鉴别身份的标示，并且在Binder通信时会根据UID/PID进行有效性检测。
 
@@ -108,16 +111,21 @@ ServiceManager也是运行在用户空间的一个独立进程。
 
 
 
-<a name="anchor3"></a>
-## 3. Binder设计原理
+<a name="anchor2"></a>
+# 2. Binder设计原理
 
 在了解了Binder的架构和优缺点之后，接下来开始讲解Binder的设计。
 
 前面说过，Binder设计要提供C-S架构。  
-试想，如果C-S架构中的Client和Server属于同一进程；那么，当Client要向Server发送请求时，只需要在Client端先获取相应的Server端对象；然后，再通过Server对象调用Server的相应接口即可。但是，Binder机制中涉及到的Client和Server是位于不同的进程中的，这也就意味着，不可能直接获取到Server对象。那么怎么办呢？ 那就需要ServiceManager和Binder驱动的参与，而且需要做到以下几点：  
+试想，如果C-S架构中的Client和Server属于同一进程：那么，当Client要向Server发送请求时，只需要在Client端先获取相应的Server端对象；然后，再通过Server对象调用Server的相应接口即可。但是，Binder机制中涉及到的Client和Server是位于不同的进程中的，这也就意味着，不可能直接获取到Server对象。那么怎么办呢？ 那就需要ServiceManager和Binder驱动的参与。
 
+在详细说明之前，先看一张MediaPlayerService的类图，帮会组于我们对Binder的设计进行了解。
 
-### 第一，Server端接入点
+[skywang-todo(MediaPlayerService的类图)]
+
+如
+
+## 第一，Server要提供接入点
 
   Client要向Server发送请求，而又不能直接获取到Server对象；那么，Server必须要提供一个接入点，让Client能够访问到Server。  
   实际上，这个接入点是"Server在Binder驱动中的Binder引用的地址"。至于什么是Binder引用的地址，请继续往下看。

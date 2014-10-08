@@ -8,18 +8,16 @@ date: 2014-09-07 09:03
 ---
 
 
-> 本文会介绍Android的消息处理机制。  
-
-> **目录**  
-> **1**. [Android消息机制的架构](#anchor1)  
+> 前面两篇文章分别介绍了getService中"请求的发送"和"请求的处理"这两部分，本文将介绍getService请求的最后一部分--请求的反馈。下面就说说MediaPlayer收到请求反馈之后的处理流程。
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
 
 
 <a name="anchor1"></a>
-# MediaPlayerService的main()函数
+# 1. Binder驱动中binder_thread_read()的源码
 
+从MediaPlayer开始唤醒开始说起。
 
     static int binder_thread_read(struct binder_proc *proc,
                     struct binder_thread *thread,
@@ -135,10 +133,14 @@ date: 2014-09-07 09:03
 (02) 事务的类型是BINDER_WORK_TRANSACTION，得到对应的binder_transaction*类型指针t之后，跳出switch语句。很显然，此时t不为NULL，因此继续往下执行。下面的工作的目的，是将t中的数据转移到tr中(tr是事务交互数据包结构体binder_transaction_data对应的指针)，然后将指令和tr数据都拷贝到用户空间，让MediaPlayer读取后进行处理。此时的指令为BR_REPLY！  
 (03) 最后，更新*consumed的值，即更新bwr.read_consumed的值。
 
+binder_thread_read()执行完毕之后，共反馈了两个指令到用户空间：BR_NOOP和BR_REPLY。
 
-之后的流程应该都比较熟悉了，首先返回到binder_ioctl()中，接着将数据拷贝到用户空间。接下来的工作就交给MediaPlayer进程进行处理了。  
+之后的流程应该都比较熟悉了，首先返回到binder_ioctl()中，接着将ServiceManager反馈的数据拷贝到用户空间。接下来的工作就交给MediaPlayer进程进行处理了。  
 从Binder驱动返回后，首先回到talkWithDriver()中，接着便返回到waitForResponse()中。在waitForResponse()会反馈数据进行解析。  
 
+
+<a name="anchor2"></a>
+# 2. IPCThreadState::waitForResponse
 
     status_t IPCThreadState::waitForResponse(Parcel *reply, status_t *acquireResult)
     {
@@ -188,6 +190,9 @@ date: 2014-09-07 09:03
 说明：在BR_REPLY分支中，先读取出数据，并保存到tr中。由于reply不为null，并且tr.flags & TF_STATUS_CODE为0；因此，会执行reply->ipcSetDataReference()。
 
 
+<a name="anchor3"></a>
+# 3. Parcel::ipcSetDataReference
+
     void Parcel::ipcSetDataReference(const uint8_t* data, size_t dataSize,
         const size_t* objects, size_t objectsCount, release_func relFunc, void* relCookie)     
     {
@@ -204,12 +209,14 @@ date: 2014-09-07 09:03
         scanForFds();
     }
 
-说明： data就是Binder返回来的数据地址，而objectsCount则为1。先通过freeDataNoInit()将原始的数据清空，然后再给mData和mObjects赋值，这样就将数据保存到了Parcel中。  
+说明： data就是ServiceManager返回来的数据。数据中包含一个flat_binder_object对象(对应ServiceManager中的binder_object)，因此objectsCount则为1。先通过freeDataNoInit()将原始的数据清空，然后再给mData和mObjects赋值，这样就将数据保存到了Parcel中。  
 为什么objectsCount的值是1呢？请返回查看一下Service Manager在执行binder_send_reply()即可知，这里就不再多说。
 
 waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact()中；然后层层返回，直到退回到checkService()。  
 
 
+<a name="anchor4"></a>
+# 4. BpServiceManager::checkService()
 
     virtual sp<IBinder> checkService( const String16& name) const
     {
@@ -220,8 +227,11 @@ waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact(
         return reply.readStrongBinder();
     }     
 
-说明：到目前为止，通过transact()来获取MediaPlayerService的事务已经执行完毕！MediaPlayerService对应的数据都保存在replay中。接下来的工作就是调用reply.readStrongBinder()来从replay中解析出所需要的数据，即MediaPlayerService在Biner驱动中的Binder引用描述。
+说明：到目前为止，通过transact()来获取MediaPlayerService的事务已经执行完毕！MediaPlayerService的接入点已经保存在replay中。接下来的工作就是调用reply.readStrongBinder()来从replay中解析出所需要的数据，即MediaPlayerService在Biner驱动中的Binder引用描述，也就是C++层的句柄。
 
+
+<a name="anchor5"></a>
+# 5. Parcel::readStrongBinder
 
     sp<IBinder> Parcel::readStrongBinder() const
     {
@@ -232,6 +242,9 @@ waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact(
 
 说明：readStrongBinder()会调用unflatten_binder()来解析Parcel中的数据。
 
+
+<a name="anchor6"></a>
+# 6. Parcel::unflatten_binder
 
     status_t unflatten_binder(const sp<ProcessState>& proc,
         const Parcel& in, sp<IBinder>* out)
@@ -252,7 +265,7 @@ waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact(
     }
 
 说明：readObject()的作用是从Parcel中读取出它所保存的flat_binder_object类型的对象。该对象的类型是BINDER_TYPE_HANDLE，因此会指向BINDER_TYPE_HANDLE对应的switch分支。  
-(01) 这里的proc是ProcessState对象，执行proc->getStrongProxyForHandle()会将句柄(MediaPlayerService的Binder引用描述)保存到ProcessState的句柄链表中，然后再创建并返回该句柄的BpBinder对象(即Binder的代理)。在[skywang-todo]中有getStrongProxyForHandle()的详细说明，下面只给出getStrongProxyForHandle()代码。  
+(01) 这里的proc是ProcessState对象，执行proc->getStrongProxyForHandle()会将句柄(MediaPlayerService的Binder引用描述)保存到ProcessState的链表中，然后再创建并返回该句柄的BpBinder对象(即Binder的代理)。在[Android Binder机制(四) defaultServiceManager()的实现][link_binder_04_defaultServiceManager]中有getStrongProxyForHandle()的详细说明，下面只给出getStrongProxyForHandle()代码。  
 (02) finish_unflatten_binder()中只有return NO_ERROR。
 
 
@@ -291,11 +304,14 @@ waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact(
         return result;
     }
 
-这样，getService()的内容就全部执行完毕。getService()的返回结果IBinder=BpBinder对象，该对象包含了"MediaPlayerService(在Binder驱动)中的Binder引用的描述"，该描述是个整型句柄。之后，若MediaPlayer要向MediaPlayerService发送请求，就根据该IBinder对象和"MediaPlayerService"进行通信。
+这样，getService()的内容就全部执行完毕。getService()的返回结果IBinder=BpBinder对象，该对象包含了"MediaPlayerService(在Binder驱动)中的Binder引用的描述"，该描述在C++层而言就是个整型句柄。之后，若MediaPlayer要向MediaPlayerService发送请求，就根据该IBinder对象和"MediaPlayerService"进行通信。
 
 
-上面只是执行完了getService()，它返回了IBinder对象。但是，getMediaPlayerService()并没有执行完毕。
+上面只是执行完了getService()，它返回了IBinder对象。但是，getMediaPlayerService()并没有执行完毕。下面继续回到getMediaPlayerService()中。
 
+
+<a name="anchor7"></a>
+# 7. IMediaDeathNotifier::getMediaPlayerService()
 
     const sp<IMediaPlayerService>& IMediaDeathNotifier::getMediaPlayerService()
     {
@@ -317,7 +333,11 @@ waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact(
     }
 
 说明：在成功获取MediaPlayerService对应的IBinder对象(binder)之后，可以通过interface_cast<IMediaPlayerService>(binder)获取它的代理。  
-是不是对interface_cast()很熟悉！不错，在[skywang-todo]中就是通过该宏获取MediaPlayerService的代理的。
+是不是对interface_cast()很熟悉！不错，在[Android Binder机制(四) defaultServiceManager()的实现][link_binder_04_defaultServiceManager]中就是通过该宏获取IServiceManager的代理的。
+
+
+<a name="anchor8"></a>
+# 8. IMediaDeathNotifier::getMediaPlayerService()
 
     template<typename INTERFACE>
     inline sp<INTERFACE> interface_cast(const sp<IBinder>& obj)
@@ -347,4 +367,11 @@ waitForResponse()执行完BR_REPLY之后，便返回到IPCThreadState::transact(
 
 这样，MediaPlayer进程的getService请求就全部介绍完毕了。
 
+
+
+[link_binder_01_introduce]: /2014/09/01/Binder-Introduce/
+[link_binder_02_datastruct]: /2014/09/02/Binder-Datastruct/
+[link_binder_03_ServiceManagerDeamon]: /2014/09/03/Binder-ServiceManager-Daemon/
+[link_binder_04_defaultServiceManager]: /2014/09/04/Binder-defaultServiceManager/
+[link_binder_05_addService01]: /2014/09/05/BinderCommunication-AddService01/
 

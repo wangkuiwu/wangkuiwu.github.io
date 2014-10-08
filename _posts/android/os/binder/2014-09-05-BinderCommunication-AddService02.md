@@ -431,7 +431,7 @@ t->buffer是在binder_transaction()中，通过binder_alloc_buf()分配的内核
 <a name="anchor9"></a>
 # 9. svcmgr_handler()
 
-接下来，回到svcmgr_handler()中，调用bio_put_uint32(reply, 0)；将0写入到reply中。
+接下来，回到svcmgr_handler()中，调用bio_put_uint32(reply, 0)。这里就不对bio_put_uint32()的代码进行展开了，bio_put_uint32(reply, val)的作用是将val写入到reply中。但是，当val=0时，不会写入任何数据；也就是说bio_put_uint32(reply, 0)不会写入任何数据到reply中！
 
     int svcmgr_handler(struct binder_state *bs,
                        struct binder_txn *txn,
@@ -494,8 +494,8 @@ t->buffer是在binder_transaction()中，通过binder_alloc_buf()分配的内核
     }   
 
 说明：  
-(01) 先看看参数。bs是struct binder_state，它保存了打开"/dev/binder"文件的相关信息。reply是中有数据0。buffer_to_free是对应binder_transaction_data中保存请求数据的buffer缓冲区，它是在Binder驱动的binder_transaction()中分配的。status_t=0。  
-(02) 该函数中的私有结构体struct是用来描述返回给Binder驱动的数据。我们知道，Binder机制的交互数据的格式是"指令+数据"。这里，返回的指令有两个BC_FREE_BUFFER和BC_REPLY，BC_FREE_BUFFER是告诉Binder驱动，请求处理完毕，让Binder驱动释放数据缓冲；而BC_REPLY是告诉Binder驱动，这是回复，回复的内容是data.txt.data，这里面的内容就是好reply中的数值0。  
+(01) 先看看参数。bs是struct binder_state，它保存了打开"/dev/binder"文件的相关信息。reply没有任何数据。buffer_to_free是对应binder_transaction_data中保存请求数据的buffer缓冲区，它是在Binder驱动的binder_transaction()中分配的。status_t=0。  
+(02) 该函数中的私有结构体struct是用来描述返回给Binder驱动的数据。我们知道，Binder机制的交互数据的格式是"指令+数据"。这里，返回的指令有两个BC_FREE_BUFFER和BC_REPLY，BC_FREE_BUFFER是告诉Binder驱动，请求处理完毕，让Binder驱动释放数据缓冲；而BC_REPLY是告诉Binder驱动，这是回复，回复的内容是data.txt.data，实际上，这里的回复内容是空！  
 (03) 最后，调用binder_write()将数据打包。
 
 
@@ -522,7 +522,7 @@ t->buffer是在binder_transaction()中，通过binder_alloc_buf()分配的内核
         return res;
     }
 
-说明：binder_write()单单只是向Kernel发送一个消息，而不会去读取消息反馈。此时，便再次进入到Binder驱动中。
+说明：binder_write()单单只是向Binder驱动发送一个消息，而不会去读取消息反馈。
 
 
 
@@ -635,7 +635,7 @@ t->buffer是在binder_transaction()中，通过binder_alloc_buf()分配的内核
     }
 
 说明：在Service Manager中，反馈给Binder驱动的指令有两个，分别是BC_FREE_BUFFER和BC_REPLY。  
-(01) binder_write_read()先读出BC_FREE_BUFFER指令，然后保存数据的内存。代码中给出了相应的注释，这里就不再详细说明了。  
+(01) binder_write_read()先读出BC_FREE_BUFFER指令，然后释放内存。代码中给出了相应的注释，这里就不再详细说明了。  
 (02) 接着，读出BC_REPLY指令，将数据拷贝到内核空间之后，便执行binder_transaction()对数据进行处理。
 
 
@@ -686,7 +686,6 @@ t->buffer是在binder_transaction()中，通过binder_alloc_buf()分配的内核
         }
         e->to_proc = target_proc->pid;
 
-        /* TODO: reuse incoming transaction for reply */
         // 分配一个待处理的事务t，t是binder事务(binder_transaction对象)
         t = kzalloc(sizeof(*t), GFP_KERNEL);
         if (t == NULL) {
@@ -786,21 +785,23 @@ t->buffer是在binder_transaction()中，通过binder_alloc_buf()分配的内核
 (06) 最后，调用wake_up_interruptible()唤醒MediaPlayerService进程。 
 
 
+此时，Binder驱动就将addService的反馈内容以待处理事务t的方式添加到MediaPlayerService的待处理事务队列当中，并将MediaPlayerService进程唤醒了。而对于待完成工作tcomplete，肯定是告诉ServiceManager进程，它的反馈已经被Binder驱动收到。
 
-[skywang-todo: tag]
-
-下面，还是先看完Service Manager的流程，然后再来看MediaPlayerService被唤醒后做了什么。
-
-
-Service Manager执行完binder_transaction()后，回到binder_thread_write()中；此时，数据已经处理完毕，便返回到binder_ioctl()中。binder_ioctl()将数据拷贝到用户空间后，Binder驱动的就结束了。
-
-回到Service Manager守护进程中，binder_write()执行完ioctl()后，返回到binder_send_reply()中，binder_send_reply()则进一步返回到binder_parse()。binder_parse()已经解析完请求数据，于是进一步返回到binder_loop()中。  
-binder_loop()会再次开始循环，调用ioctl(,BINDER_WRITE_READ,)到Binder驱动执行读操作。此时，再次进入到Binder驱动的binder_ioctl()，然后会调用binder_thread_read()执行读操作。此时，Service Manager线程中有一个类型为BINDER_WORK_TRANSACTION_COMPLETE的待处理事务；于是，执行BINDER_LOOPER_STATE_NEED_RETURN动作，将该事务从Service Manager的待处理事务队列中删除，并反馈cmd=BR_TRANSACTION_COMPLETE信息给Service Manager守护进程。Service Manager守护进程收到Binder驱动的反馈后，解析出BR_TRANSACTION_COMPLETE，该指令什么也不做。于是，Service Manager再次调用ioctl(,BINDER_WRITE_READ,)，此时，待处理事务队列为空，因此，Service Manager再次进入中断等待状态。
-
-至此，MediaPlayerService发送addService()请求给Service Manager，Service Manager的全部工作已经处理完毕！
+下面，还是先说完ServiceManager的流程，然后再来看MediaPlayerService被唤醒后做了什么。
 
 
+ServiceManager执行完binder_transaction()后，回到binder_thread_write()中；此时，数据已经处理完毕，便返回到binder_ioctl()中。binder_ioctl()将数据拷贝到用户空间后，Binder驱动的工作就结束了。  
+于是，又回到ServiceManager守护进程中，binder_write()执行完ioctl()后，返回到binder_send_reply()中，binder_send_reply()则进一步返回到binder_parse()。binder_parse()已经解析完请求数据，于是进一步返回到binder_loop()中。而binder_loop()会再次开始循环，调用ioctl(,BINDER_WRITE_READ,)到Binder驱动执行读操作。  
+当ServiceManager再次进入到Binder驱动，并通过binder_ioctl()调用到binder_thread_read()时。由于此时的ServiceManager线程中有一个类型为BINDER_WORK_TRANSACTION_COMPLETE的待处理事务；于是，便取出该事务进行执行。执行完毕之后，将该事务从Service Manager的待处理事务队列中删除，并反馈cmd=BR_TRANSACTION_COMPLETE信息给ServiceManager守护进程。ServiceManager守护进程收到Binder驱动的反馈后，解析出BR_TRANSACTION_COMPLETE，该指令什么也不做；它的目的是让ServiceManager知道，此次addService的反馈已经顺利完成！  
+于是，ServiceManager继续它的循环；当它再次调用ioctl()，进而进入到Binder驱动中读取请求时；由于此时的待处理事务队列为空，因此，ServiceManager会再次进入中断等待状态，等待Client的请求。
 
+
+<br>
+至此，MediaPlayerService进程的addService的请求处理部分就讲解完了。在继续了解请求的反馈之前，先回顾一下本部分的内容。
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/addService02_deal.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/addService02_deal.jpg" alt="" /></a>
+
+MediaPlayerService将addService请求发送到Binder驱动，Binder驱动将addService转换成一个待处理事务并添加到ServiceManager的事务队列中，并将ServiceManager唤醒。ServiceManager被唤醒后，取出该处理；接着，Binder驱动将BR_TRANSACTION发送到ServiceManager守护进程中。ServiceManager通过BR_TRANSACTION解析出addService请求；在从请求数据中解析出MediaPlayerService的相关信息后，并将这些信息存储在一个链表中。接着，ServiceManager守护进程反馈BC_FREE_BUFFER和BC_REPLY给Binder驱动。Binder驱动收到BC_FREE_BUFFER后，释放保存事务数据的内存；在收到BC_REPLY之后，得知ServiceManager已经处理完addService请求。于是，将一个待处理事务添加到MediaPlayerService的事务队列中；然后将MediaPlayerService唤醒。目的是告诉MediaPlayerService，它已经处理完了addService请求。  最后，Binder驱动还需要反馈一个BR_TRANSACTION_COMPLETE给ServiceManager进程，目的是告诉ServiceManager，Binder驱动已经收到了它的回复。
 
 
 [link_binder_01_introduce]: /2014/09/01/Binder-Introduce/
