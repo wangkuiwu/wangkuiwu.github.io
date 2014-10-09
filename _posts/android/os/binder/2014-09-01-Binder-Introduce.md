@@ -21,16 +21,16 @@ TAG:SKYWANG-TODO
 
 
 <a name="anchor1"></a>
-# 1. Binder架构简介
+# 1. Binder简介
 
 <a name="anchor1_1"></a>
-## 1.1 Binder架构图
+## 1.1 Binder模型
 
 [skywang-todo]
 
-上面是Binder的架构图。Binder机制共包括4种角色：**Binder驱动**，**ServiceManager**，**Server**和**Client**。 为了便于理解，这里用MediaPlayerService代表了Server，而MediaPlayer则代表了Client。
+上图中涉及到Binder模型的4类角色：**Binder驱动**，**ServiceManager**，**Server**和**Client**。 因为后面章节讲解Binder时，都是以MediaPlayerService和MediaPlayer为代表进行讲解的；这里就使用MediaPlayerService代表了Server，而MediaPlayer则代表了Client。
 
-Binder机制的目的**是实现IPC(Inter-Process Communication)，即实现进程间通信**。在上面的图中，由于MediaPlayerService是Server的代表，而MediaPlayer是Client的代表；因此，对于上图而言，Binder机制则表现为"实现MediaPlayerService和MediaPlayer之间的通信"。
+Binder机制的目的**是实现IPC(Inter-Process Communication)，即实现进程间通信**。在上图中，由于MediaPlayerService是Server的代表，而MediaPlayer是Client的代表；因此，对于上图而言，Binder机制则表现为"实现MediaPlayerService和MediaPlayer之间的通信"。
 
 
 
@@ -64,7 +64,7 @@ Android的通信是基于Client-Server架构的，进程间的通信无非就是
 <a name="anchor1_3"></a>
 ## 1.3 ServiceManager存在的原因和意义
 
-Binder是要实现Android的C-S架构的，即Client-Server架构。而ServiceManager的存在，则是为了更好的实现C-S架构。
+Binder是要实现Android的C-S架构的，即Client-Server架构。而ServiceManager，是以服务管理者的身份存在的。
 
 ServiceManager也是运行在用户空间的一个独立进程。  
 (01) 对于Binder驱动而言，**ServiceManager是一个守护进程，更是Android系统各个服务的管理者**。Android系统中的各个服务，都是添加到ServiceManager中进行管理的，而且每个服务都对应一个服务名。当Client获取某个服务时，则通过服务名来从ServiceManager中获取相应的服务。  
@@ -108,22 +108,109 @@ ServiceManager也是运行在用户空间的一个独立进程。
 
 
 
+<a name="anchor1_5"></a>
+## 1.5 Binder中各角色之间关系
 
+先看看下面的关系图
+
+[skywang-todo(关系图)]
+
+在解释上面的图之前，先解释图中涉及到的几个非常重要的概念。
+
+1. Binder实体
+
+  Binder实体，是各个Server以及ServiceManager在内核中的存在形式。  
+  Binder实体的本质上内核中binder_node结构体的对象，它的作用是在内核中保存Server和ServiceManager的信息(例如，Binder实体中保存了Server对象在用户空间的地址)。简言之，Binder实体是Server在Binder驱动中的存在形式，通过Binder实体就能够找到Server对象。  
+  在上图中，Server和ServiceManager在Binder驱动中都对应的存在一个Binder实体。
+
+2. Binder引用
+
+   说到Binder实体，就不得不说"Binder引用"。所谓Binder引用，实际上是binder_ref结构体对象，它的作用是在引用"Binder实体"。换句话说，每一个Binder引用都是某一个Binder实体的引用，通过Binder引用就可以在Binder驱动中找到对应的Binder实体。如果将Server看作是Binder实体的话，那么Binder引用就相当于Client中保存的Server对象，通过该Client中保存的Server对象，Client就能想Server发送请求。  
+
+
+   Binder实体和Binder引用都是内核(即，Binder驱动)中的数据结构。每一个Server在内核中就表现为一个Binder实体，而每一个Client则表现为一个Binder引用。这样，每个Binder引用都对应一个Binder实体，而每个Binder实体则可以多个Binder引用。
+
+3. 远程服务
+
+   Server都是以服务的形式注册到ServiceManager中进行管理的。如果将Server本身看作是"本地服务"的话，那么Client中的"远程服务"就是本地服务的代理，通过该远程服务Client就能和Server进行通信。
+
+<br/>
+理解上面3个概念之后，再通过各角色之间的通信来解析该关系图。
+
+**ServiceManager守护进程**  
+ServiceManager是用户空间的一个守护进程。当该应用程序启动时，它会和Binder驱动进行通信，告诉Binder驱动它是服务管理者；对Binder驱动而言，它则会新建ServiceManager对应的Binder实体，并将该Binder实体设为全局变量。为什么要将它设为全局变量呢？这点应该很容易理解--因为Client和Server都需要和ServiceManager进行通信，不将它设为全局变量的话，怎么找到ServiceManager呢！
+
+
+**Server注册到ServiceManager中**  
+Server首先会向Binder驱动发起注册请求，而Binder驱动在收到该请求之后就将该请求转发给ServiceManager进程。但是Binder驱动怎么才能知道该请求是要发给ServiceManager的呢？这是因为Server在发送请求的时候，会告诉Binder驱动这个请求是交给0号Binder引用对应的进程来进行处理的。而Binder驱动中指定了这个0号引用与ServiceManager关联的。  
+在Binder驱动转发该请求之前，它其实还做了一件很重要的事：那就是当它知道该请求是由一个Server发送的时候，它会在ServiceManager的"保存Binder实体的红黑树"中查找该Server对应的Binder实体；找不到的话，就新建该Server对应的Binder实体，并将其添加到"ServiceManager的保存Binder实体的红黑树"中。简言之，Binder驱动创建了Server对应的Binder实体。  
+当ServiceManager收到Binder驱动转发的注册请求之后，它就将该Server的相关信息注册到"Binder引用组成的单链表"中。这里所说的Server相关信息主要包括两部分：Server对应的服务名 + Server对应的Binder实体的一个Binder引用。
+
+
+**Client获取远程服务**  
+Client要和某个Server通信，需要先获取到该Server的远程服务。那么Client是如何获取到Server的远程服务的呢？  
+Client首先会向Binder驱动发起获取服务的请求。Binder驱动在收到该请求之后也是该请求转发给ServiceManager进程。ServiceManager在收到Binder驱动转发的请求之后，会从"Binder引用组成的单链表"中找到要获取的Server的相关信息。至于ServiceManager是如何从单链表中找到Server的呢？答案是Client发送的请求数据中，会包括它要获取的Server的服务名；而ServiceManager正是根据这个服务名来找到Server的。  
+接下来，ServiceManager通过Binder驱动将Server信息反馈给Client的。它反馈的信息是Server对应的Binder驱动的Binder引用。而Client在收到该Server的Binder引用相关信息之后，就根据该Binder引用创建一个Server的远程服务。Client调用该Server远程服务的接口，就相当于在调用Server的服务接口一样；因为Client调用该Server的远程服务接口时，该远程服务会对应的通过Binder驱动和真正的Server进行交互，从而执行相应的动作。
 
 
 <a name="anchor2"></a>
-# 2. Binder设计原理
+# 2. Binder框架解析
 
-在了解了Binder的架构和优缺点之后，接下来开始讲解Binder的设计。
+
+## 2.1 Binder角色
+
+在了解了Binder机制的四种角色和它的优缺点之后，接下来可以开始讲解Binder的框架和设计了。
+
+在了解Binder设计的由来之前，先了解各个层次中的Binder角色的很有必要的。 
+
+先看看下面一张图
+
+[skywang-todo(角色图)]
+
+前面说过，ServiceManager是服务管理者。下面就通过"Server将自己注册到ServiceManager中"以及"Client获取Server"这两个流程来理清图中各个角色之间的关系。
+
+1. Server将自己注册到ServiceManager中
+
+  由于Server和ServiceManager是用户空间的两个不同进程，它们之间的通信需要Binder驱动的协助。实际上，Server和ServiceManager在Binder驱动中都是以一个"Binder实体"的形式存在的。所谓Binder实体，实际上是binder_node结构体对象，它的作用是在Kernel中保存Server和ServiceManager的信息；在Binder实体中保存了Server对象在用户空间的地址。简言之，Binder实体是Server在Binder驱动中的存在形式，通过Binder实体就能够找到Server对象。      
+   说到Binder实体，就不得不说"Binder引用"。所谓Binder引用，实际上是binder_ref结构体对象，它的作用是在引用"Binder实体"。换句话说，每一个Binder引用都是某一个Binder实体的引用。这样，通过Binder引用就可以在Binder驱动中找到对应的Binder实体。  
+   Binder实体和Binder引用都是Binder驱动(即Kernel)中的数据结构。每一个Server在Kernel中就表现为一个Binder实体，而每一个Client则表现为一个Binder引用。这样，每个Binder引用都对应一个Binder实体，而每个Binder实体则可以多个Binder引用。
+
+   理解了Binder实体和Binder引用的概念之后，再接着说Server是如何将自己注册到ServiceManager中的。  
+   首先，Server向Binder驱动发送注册服务请求，该请求内容包含了两个非常重要的信息：Server对应的服务名+Server的本地Binder对象。这两个信息的作用稍候再介绍。当Binder驱动收到注册服务请求之后，将该请求转发给ServiceManager；
+
+
+
+   
+   简单来说，通过ServiceManager中的"Server服务的名称"能够找到"Binder引用的地址"，而通过"Binder引用的地址"又可以找到"它对应的Binder实体"；通过"Binder实体"就可以找到Server端在用户空间的地址，即可以找到Server对象。
+
+  Server发起注册。
+  在Server将自己保存到Binder实体中之后，Binder驱动再通知ServiceManager：将"Server服务的名称"连同"Binder引用的地址"一起保存到ServiceManager守护进程中。"Server服务的名称"的作用显而易见，它是为了方便查找和获取Server对象，通过该名称就可以找到对应的Server。而"Binder引用"呢？它是Binder驱动中的binder_ref结构体对象，一个Binder引用是一个Binder实体的引用，通过Binder引用就可以在Binder驱动中找到对应的Binder实体。 简单来说，通过ServiceManager中的"Server服务的名称"能够找到"Binder引用的地址"，而通过"Binder引用的地址"又可以找到"它对应的Binder实体"；通过"Binder实体"就可以找到Server端在用户空间的地址，即可以找到Server对象。  
+
+
+
+由于Server和ServiceManager是用户空间的两个不同进程，它们之间的通信需要Binder驱动的协助。首先，Server向Binder驱动发送注册服务请求，该请求内容包含了两个非常重要的信息：Server对应的服务名+Server的本地Binder对象。这两个信息的作用稍候再介绍。当Binder驱动收到注册服务请求之后，将该请求转发给ServiceManager；
+
+
+。当Client需要向Server发送请求时，需要先获取Server的接入点。如上图所示，接入点就是Server对应的远程代理。Client能够获取到该远程代理，获取的方式就是Client向ServiceManager发送获取服务的请求，而且发送请求时指定要获取的服务名。当ServiceManager收到该请求之后，就找到ServiceManager中保存。
+
+
 
 前面说过，Binder设计要提供C-S架构。  
-试想，如果C-S架构中的Client和Server属于同一进程：那么，当Client要向Server发送请求时，只需要在Client端先获取相应的Server端对象；然后，再通过Server对象调用Server的相应接口即可。但是，Binder机制中涉及到的Client和Server是位于不同的进程中的，这也就意味着，不可能直接获取到Server对象。那么怎么办呢？ 那就需要ServiceManager和Binder驱动的参与。
+试想，如果C-S架构中的Client和Server属于同一进程：那么，当Client要向Server发送请求时，只需要在Client端先获取相应的Server端对象；然后，再通过Server对象调用Server的相应接口即可。但是，Binder机制中涉及到的Client和Server是位于不同的进程中的，这也就意味着，不可能直接获取到Server对象。那么怎么办呢？ 那就需要ServiceManager和Binder驱动的参与。总的来说，提供C-S架构，需要做到以下亮点：
 
-在详细说明之前，先看一张MediaPlayerService的类图，帮会组于我们对Binder的设计进行了解。
 
-[skywang-todo(MediaPlayerService的类图)]
+## 第一，Server要提供接入点
 
-如
+[skywang-todo(远程代理图)]
+
+前面说过，Server会先将自己注册到ServiceManager中。当Client需要向Server发送请求时，需要先获取Server的接入点。如上图所示，接入点就是Server对应的远程代理。Client能够获取到该远程代理，获取的方式就是Client向ServiceManager发送获取服务的请求，而且发送请求时指定要获取的服务名。当ServiceManager收到该请求之后，就找到ServiceManager中保存。
+
+如MediaPlayerService
+
+
+
+
+
 
 ## 第一，Server要提供接入点
 
