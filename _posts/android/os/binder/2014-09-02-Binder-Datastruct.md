@@ -4,28 +4,38 @@ title: "Android Binder机制(二) Binder中的数据结构"
 description: "android"
 category: android
 tags: [android]
-date: 2014-09-02 09:02
+date: 2014-09-02 09:01
 ---
 
 
-> 本文是一篇参考文献，当读者阅读后面的文章时，可以以此文章为参考。本文列举的数据结构，涵盖了Kernel层，Service Manager守护进程，C++层以及Android Framework层等几个方面。
-
-> **目录**  
-> **1**. [Android消息机制的架构](#anchor1)  
-> **2**. [C++层](#anchor1)  
+> 在对Binder代码展开详细介绍之前，先列举出Binder机制中涉及到的数据结构。本文是一篇参考文章，读者在阅读代码的过程中遇到相关的数据结构，就可以查阅此文中的内容。本文列举的数据结构，涵盖了内核空间和用户空间两个部分。内核空间部分就是Binder驱动中涉及到的数据结构；而用户空间的部分，包括ServiceManager守护进程，以及Android的C++层和Framework层的相关数据结构。
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
-TAG:SKYWANG-TODO
-
-
-<a name="anchor0"></a>
-# Service Manager守护进程
-
+> **目录**  
+> **1**. [内核空间的Binder数据结构](#anchor1)  
+> **1.1**. [binder_proc](#anchor1_1)  
+> **1.2**. [binder_buffer](#anchor1_2)  
+> **1.3**. [binder_thread](#anchor1_3)  
+> **1.4**. [binder_node](#anchor1_4)  
+> **1.5**. [binder_ref](#anchor1_5)  
+> **1.6**. [binder_write_read](#anchor1_6)  
+> **1.7**. [flat_binder_object](#anchor1_7)  
+> **1.8**. [binder_transaction_data](#anchor1_8)  
+> **2**. [用户空间的](#anchor2)  
+> **2.1**. [ServiceManager守护进程中的数据结构](#anchor2_1)  
+> **2.2**. [C++层的数据结构](#anchor2_2)  
 
 
 <a name="anchor1"></a>
-# 1. Kernel层
+# 1. 内核空间的Binder数据结构
+
+在介绍Binder驱动中的数据结构时，先回顾一下上一篇提到的"内核中的Binder设计图"，有一个整体印象。
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/binder_kernel_ds01.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/binder_kernel_ds01.jpg" alt="" /></a>
+
+
+前面说过，binder_proc是描述进程上下文信息的，每一个用户空间的进程都对应一个binder_proc结构体。binder_node是Binder实体对应的结构体，它是Server在Binder驱动中的体现。binder_ref是Binder引用对应的结构体，它是Client在Binder驱动中的体现。
 
 <a name="anchor1_1"></a>
 ## 1.1 binder_proc
@@ -69,7 +79,7 @@ binder_proc是描述Binder进程上下文信息的结构体。Binder驱动的文
       struct dentry *debugfs_entry;
     };
 
-说明：binder_proc定义在drivers/staging/android/binder.c中，可见它是binder.c的私有结构体。上面已经给出了相关成员的注释，这里只对部分比较重要的成员进行说明。  
+说明：binder_proc定义在drivers/staging/android/binder.c中。由于定义在.c文件中，可见binder_proc是Binder驱动的私有结构体。上面已经给出了相关成员的注释，这里只对部分比较重要的成员进行说明。  
 (01) proc_node, 它的作用是通过proc_node，将该binder_proc添加到"全局哈希表binder_procs(它记录了所有的binder_proc)"。不过binder_procs在Kernel驱动中暂时没有太大用处，所以不用太过关注该成员。  
 (02) threads，它是包含该进程内用于处理用户请求的所有线程的红黑树。threads成员和binder_thread->rb_node关联到一棵红黑树，从而将binder_proc和binder_thread关联起来。  
 (03) nodes，它是包行该进程内的所有Binder实体所组成的红黑树。nodes成员和binder_node->rb_node关联到一棵红黑树，从而将binder_proc和binder_node关联起来。  
@@ -108,7 +118,7 @@ binder_buffer是描述Binder进程所管理的每段内存的结构体。
 <a name="anchor1_3"></a>
 ## 1.3 binder_thread
 
-binder_thread是描述Binder线程的结构体。
+binder_thread是描述Binder线程的结构体。binder_proc是描述进程的，而binder_thread是描述进程中的线程。
 
     struct binder_thread {
         struct binder_proc *proc;   // 线程所属的Binder进程
@@ -143,12 +153,12 @@ binder_node是描述Binder实体的结构体。
             struct hlist_node dead_node;    // 如果这个Binder实体所属的进程已经销毁，而这个Binder实体又被其它进程所引用，则这个Binder实体通过dead_node进入到一个哈希表中去存放
         };
         struct binder_proc *proc;           // 该binder实体所属的Binder进程
-        struct hlist_head refs;             // 该Binder实体的所有引用所组成的链表
+        struct hlist_head refs;             // 该Binder实体的所有Binder引用所组成的链表
         int internal_strong_refs;
         int local_weak_refs;
         int local_strong_refs;
-        void __user *ptr;                   // Binder实体在用户空间的地址(为IBinder对象的引用)
-        void __user *cookie;                // Binder实体在用户空间的其他数据
+        void __user *ptr;                   // Binder实体在用户空间的地址(为Binder实体对应的Server在用户空间的本地Binder的引用)
+        void __user *cookie;                // Binder实体在用户空间的其他数据(为Binder实体对应的Server在用户空间的本地Binder自身)
         unsigned has_strong_ref:1;
         unsigned pending_strong_ref:1;
         unsigned has_weak_ref:1;
@@ -164,10 +174,7 @@ binder_node是描述Binder实体的结构体。
 (02) proc，它是binder_proc(进程上下文信息)结构体对象。目的是保存该Binder实体的进程。  
 (03) refs，它是该Binder实体的所有引用所组成的链表。
 
-在Binder驱动中，会为每一个Server都创建一个Binder实体，即会为每个Server都创建binder_node对象。ServiceManager的Binder实体会被保存到Binder驱动的全局变量中，而其他Server(例如，MediaPlayerService)的Binder实体则会被添加到"ServiceManager的Binder实体红黑树"中进行管理。  
-同样的，Binder驱动会为每个Client创建Binder引用，即会为每个Client创建binder_ref对象。  
-这样，"Binder实体"和"Binder引用" 分别是Server和Client在Binder驱动中的体现。 Client获取到Server对象后，"Binder引用所引用的Biner实体(即binder_ref.node)" 会指向 "Server对应的Biner实体"；同样的，Server被某个Client引用之后，"Server对应的Binder实体的引用列表(即，binder_node.refs)" 会指向 "Client对应的Binder引用"。
-
+在Binder驱动中，会为每一个Server都创建一个Binder实体，即会为每个Server都创建一个binder_node对象。
 
 
 
@@ -175,7 +182,6 @@ binder_node是描述Binder实体的结构体。
 ## 1.5 binder_ref
 
 binder_ref是描述Binder引用的结构体。
-
 
     struct binder_ref {
         int debug_id;
@@ -196,8 +202,9 @@ binder_ref是描述Binder引用的结构体。
 (03) proc，它是binder_proc(进程上下文信息)结构体对象。目的是保存该Binder引用所属的进程。  
 (04) desc是Binder引用的描述，实际上它就是Binder驱动为该Binder分配的一个唯一的int型整数。通过该desc，可以在binder_proc->refs_by_desc中找到该Binder引用，进而可以找到该Binder引用所引用的Binder实体等信息。  
 
-在Binder驱动中，会为每个Client创建对应的Binder引用，即会为每个Client创建binder_ref对象。这正如，Binder驱动会为每一个Server都创建一个Binder实体一样。  
-通过，"Binder实体"和"Binder引用" 就可以很好的将Server和Client关联起来：因为Binder实体和Binder引用分别是Server和Client在Binder驱动中的体现。 Client获取到Server对象后，"Binder引用所引用的Biner实体(即binder_ref.node)" 会指向 "Server对应的Biner实体"；同样的，Server被某个Client引用之后，"Server对应的Binder实体的引用列表(即，binder_node.refs)" 会指向 "Client对应的Binder引用"。
+在Binder驱动中，会为每个Client创建对应的Binder引用，即会为每个Client创建binder_ref对象。
+
+**"Binder实体"和"Binder引用"可以很好的将Server和Client关联起来：因为Binder实体和Binder引用分别是Server和Client在Binder驱动中的体现。 Client获取到Server对象后，"Binder引用所引用的Biner实体(即binder_ref.node)" 会指向 "Server对应的Biner实体"；同样的，Server被某个Client引用之后，"Server对应的Binder实体的引用列表(即，binder_node.refs)" 会包含 "Client对应的Binder引用"。**
 
 
 
@@ -215,7 +222,8 @@ binder_write_read是描述Binder读写信息的结构体。
         unsigned long   read_buffer;
     };
 
-说明：binder_write_read是Binder驱动和Android的C++层的通信结构体，它记录了Binder读写内容的相关信息。在Kernel中，它定义在drivers/staging/android/binder.h中；它对应在Android中引用在external/kernel-headers/original/linux/binder.h中。  
+说明：binder_write_read是内核空间和用户空间的通信结构体，它记录了Binder读写内容的相关信息。在内核中，它定义在drivers/staging/android/binder.h中；在Android中，它对应的引用在external/kernel-headers/original/linux/binder.h中。 
+当用户空间的应用程序和Binder驱动通信时，它会将数据打包到binder_write_read中。write_开头的是记录应用程序要发送给Binder驱动的内容，而read_开头的是记录Binder驱动要反馈给应用程序的内容。  
 (01) write_size，是写内容的总大小；write_consumed，是已写内容的大小；write_buffer，是写的内容的虚拟地址。  
 (02) read_size，是读内容的总大小；read_consumed，是已读内容的大小；read_buffer，是读的内容的虚拟地址。
 
@@ -238,49 +246,55 @@ flat_binder_object是描述Binder对象信息的结构体。
         void            *cookie;    // 当type=BINDER_TYPE_BINDER时才有效，它指向Binder对象位于C++层的本地Binder对象(即BBinder对象)。 
     };
 
-说明： flat_binder_object是用来描述Binder信息的结构体。它可以在C++层使用，也会在Binder驱动中使用。当它在C++层被使用时(例如，发送添加服务请求给servicemanager)，那么type的值一般都是BINDER_TYPE_BINDER，而此时对应的union中的binder的值是该Binder对象在C++层的本地Binder，即BBinder对象的引用；同时，cookie则是BBinder对象自身。  而当flat_binder_object在Binder驱动中被使用(例如，当Binder驱动收到发送服务请求时)，它会将该Binder对象对应的Binder实体，然后将type修改为BINDER_TYPE_HANDLE，然后将联合体中的handle修改为该Binder实体的Binder引用的描述。总体来说，在C++层，flat_binder_object是描述该Binder实体在C++层的存在形式；而在Binder驱动中，flat_binder_object则描述该Binder实体在Kernel中的存在形式。
+说明： flat_binder_object是用来描述Binder信息的结构体。它也属于内核空间和用户空间的通信结构体。当它在用户空间被使用时(例如，Server发送添加服务请求给ServiceManager)，flat_binder_object就是记录的Server位于用户空间的Binder对象的信息的结构体；此时的type的值一般都是BINDER_TYPE_BINDER类型，对应的union中的binder的值是该Binder对象在用户空间的本地Binder(即BBinder对象)的引用；同时，cookie则是本地Binder自身。  而当flat_binder_object在Binder驱动中被使用(例如，当Binder驱动收到发送服务请求时)，它会将type修改为BINDER_TYPE_HANDLE，然后将联合体中的handle修改为"该Server对应的Binder实体的Binder引用"的描述；根据Binder引用的描述就能找到该Server。总体来说，在用户空间，flat_binder_object是描述该Binder实体在用户空间的存在形式；而在内核空间中，flat_binder_object则描述该Binder实体在内核中的存在形式。
 
 
 <a name="anchor1_8"></a>
-## 1.8 flat_binder_object
+## 1.8 binder_transaction_data
 
-// binder收发的数据包格式
-struct binder_transaction_data {
-    union {
-        size_t  handle; /* target descriptor of command transaction */
-        void    *ptr;   /* target descriptor of return transaction */
-    } target;               // 该事务的目标对象(即，该事务数据包是给该target来处理的)
-    void        *cookie;    
-    unsigned int    code;  
+binder_transaction_data是描述Binder事务交互的数据格式的结构体。
 
-    unsigned int    flags;
-    pid_t       sender_pid;
-    uid_t       sender_euid;
-    size_t      data_size;  /* number of bytes of data */
-    size_t      offsets_size;   /* number of bytes of offsets */
+    struct binder_transaction_data {
+        union {
+            size_t  handle; // 当binder_transaction_data是由用户空间的进程发送给Binder驱动时，
+                            // handle是该事务的发送目标在Binder驱动中的信息，即该事务会交给handle来处理；
+                            // handle的值是目标在Binder驱动中的Binder引用。
+            void    *ptr;   // 当binder_transaction_data是有Binder驱动反馈给用户空间进程时，
+                            // ptr是该事务的发送目标在用户空间中的信息，即该事务会交给ptr对应的服务来处理；
+                            // ptr是处理该事务的服务的服务在用户空间的本地Binder对象。
+        } target;           // 该事务的目标对象(即，该事务数据包是给该target来处理的)
+        void        *cookie;    // 只有当事务是由Binder驱动传递给用户空间时，cookie才有意思，它的值是处理该事务的Server位于C++层的本地Binder对象
+        unsigned int    code;   // 事务编码。如果是请求，则以BC_开头；如果是回复，则以BR_开头。
 
-    union {
-        struct {
-            const void  *buffer;
-            const void  *offsets;
-        } ptr;
-        uint8_t buf[8];
-    } data;
-};
+        unsigned int    flags;
+        pid_t       sender_pid;
+        uid_t       sender_euid;
+        size_t      data_size;    // 数据大小
+        size_t      offsets_size; // 数据中包含的对象的个数
 
+        union {
+            struct {
+                const void  *buffer;
+                const void  *offsets;
+            } ptr;
+            uint8_t buf[8];
+        } data;                   // 数据
+    };
 
-TODO
-例如，Client(位于用户空间)向Server(位于用户空间)发送请求，Client会将请求的发送内容都写入到write_*中。具体的，将内容的虚拟地址写入到write_buffer中，将内容大小写入到write_size中，而设置write_consumed的大小为0。Client发送请求后，一般都会要求Server进行回复，因此它会设置read_size非零，而设置read_buffer为读取缓存的地址，read_consumed的大小为0。  设置完毕之后，就将请求发送给Kernel，Kernel收到请求后，就从write_buffer中读取请求内容，读取的请求内容大小为write_size；读取数据之后，设置write_consumed的大小为所读数据的大小。Kernel处理完请求之后，将反馈数据填写到read_buffer中，进而将请求反馈给Client。  
+说明： binder_transaction_data是用来描述Binder事务交互的数据结构体。它也属于内核空间和用户空间的通信结构体。
 
 
 
 
 
 <a name="anchor2"></a>
-# 2. Service Manager守护进程中的数据结构
+# 2. 用户空间的Binder数据结构
 
 <a name="anchor2_1"></a>
-## 2.1 binder_state
+## 2.1 ServiceManager守护进程中的数据结构
+
+<a name="anchor2_1_1"></a>
+### 2.1.1 binder_state
 
     struct binder_state
     {
@@ -289,11 +303,11 @@ TODO
         unsigned mapsize; // 映射内存的大小
     };  
 
-说明：binder_state是Service Manager用来描述打开的"/dev/binder"的信息结构体。
+说明：binder_state定义在frameworks/native/cmds/servicemanager/binder.c中，它是ServiceManager用来描述打开的"/dev/binder"的信息结构体。
 
 
-<a name="anchor2_2"></a>
-## 2.2 binder_object
+<a name="anchor2_1_2"></a>
+### 2.1.2 binder_object
 
 binder_object是与flat_binder_object对应的结构体。
 
@@ -305,10 +319,11 @@ binder_object是与flat_binder_object对应的结构体。
         void *cookie;
     };
 
+说明：binder_object定义在frameworks/native/cmds/servicemanager/binder.h中，它是ServiceManager中与flat_binder_object对应的结构体。
 
 
-<a name="anchor2_3"></a>
-## 2.3 binder_txn
+<a name="anchor2_1_3"></a>
+### 2.1.3 binder_txn
 
 binder_txn与binder_transaction_data对应的结构体。
 
@@ -328,10 +343,12 @@ binder_txn与binder_transaction_data对应的结构体。
         void *offs;
     };
 
+说明：binder_txn定义在frameworks/native/cmds/servicemanager/binder.h中，它是ServiceManager中与binder_transaction_data对应的结构体。
 
 
-<a name="anchor2_4"></a>
-## 2.4 svcinfo
+
+<a name="anchor2_1_4"></a>
+### 2.1.4 svcinfo
 
     struct svcinfo
     {
@@ -343,20 +360,20 @@ binder_txn与binder_transaction_data对应的结构体。
         uint16_t name[0];             // 服务的名称
     };      
 
-说明：svcinfo定义在frameworks/native/cmds/servicemanager/service_manager.c中。它是Service Manager守护进程的私有结构体。  
-svcinfo是保存"注册到Service Manager中的服务"的相关信息的结构体。它是一个单链表，在Service Manager守护进程中的svclist是保存注册到Service Manager中的服务的链表，它就是struct info类型。svcinfo中的next是指向下一个服务的节点，而ptr是该服务在Binder驱动中Binder引用的描述。name则是服务的名称。
+说明：svcinfo定义在frameworks/native/cmds/servicemanager/service_manager.c中。它是ServiceManager守护进程的私有结构体。  
+  svcinfo是保存"注册到ServiceManager中的服务"的相关信息的结构体。它是一个单链表，在ServiceManager守护进程中的svclist是保存注册到ServiceManager中的服务的链表，它就是struct info类型。svcinfo中的next是指向下一个服务的节点，而ptr是该服务在Binder驱动中Binder引用的描述。name则是服务的名称。
 
 
 
 
 
-<a name="anchor3"></a>
-# 3. C++层数据结构
+<a name="anchor2_2"></a>
+## 2.2 C++层的数据结构
 
-<a name="anchor2_1"></a>
-## 3.1 Parcel
+<a name="anchor2_2_1"></a>
+### 2.2.1 Parcel
 
-Parcel是保存封装Binder数据的结构体。
+Parcel是描述Binder通信信息的结构体。
 
     class Parcel {
     public:
@@ -384,4 +401,5 @@ Parcel是保存封装Binder数据的结构体。
         ...
     }
 
+说明：Parcel定义在frameworks/native/include/binder/Parcel.h中。
 

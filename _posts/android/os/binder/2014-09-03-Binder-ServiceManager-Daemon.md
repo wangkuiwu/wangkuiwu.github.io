@@ -4,11 +4,11 @@ title: "Android Binder机制(三) ServiceManager守护进程"
 description: "android"
 category: android
 tags: [android]
-date: 2014-09-03 09:03
+date: 2014-09-03 09:01
 ---
 
 
-> ServiceManager是一个守护进程，它一直运行在后台。它的职责是管理Binder机制中的各个Server。当Server启动时，Server会将"Server对象的名字"连同"Server对象"一起注册到ServiceManager中；而当Client需要获取Server对象时，则通过"Server对象的名字"来从ServiceManager中找到对应的Server。  
+> ServiceManager是用户空间的一个守护进程，它一直运行在后台。它的职责是管理Binder机制中的各个Server。当Server启动时，Server会将"Server对象的名字"连同"Server对象的信息"一起注册到ServiceManager中；而当Client需要获取Server接入点时，则通过"Server的名字"来从ServiceManager中找到对应的Server。  
 > 本文的主要内容就是对ServiceManager进行介绍，通过它的启动流程来分析它是如何成为Server管理者的。
 
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
