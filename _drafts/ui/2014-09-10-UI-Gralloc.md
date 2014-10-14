@@ -189,3 +189,96 @@ hw_module_t定义在hardware/libhardware/include/hardware/hardware.h中，代码
   只要找到一个库文件就停止查找；然后，通过load()来加载该库文件。但是，如果没有找到所需要的库文件，则会在目录/system/lib/hw中查找是否存在一个名称为gralloc.default.so的默认文件。如果存在的话，那么也会调用函数load()将它加载到内存中来。
 
 
+
+<a name="anchor2_4"></a>
+## 2.4 load()
+
+	static int load(const char *id,
+			const char *path,
+			const struct hw_module_t **pHmi)
+	{
+		int status;
+		void *handle;
+		struct hw_module_t *hmi;
+
+		handle = dlopen(path, RTLD_NOW);
+		...
+
+		const char *sym = HAL_MODULE_INFO_SYM_AS_STR;
+		hmi = (struct hw_module_t *)dlsym(handle, sym);
+		if (hmi == NULL) {
+			...
+		}   
+
+		if (strcmp(id, hmi->id) != 0) {
+			...
+		}   
+
+		hmi->dso = handle;
+
+		status = 0;
+
+		...
+
+		*pHmi = hmi;
+
+		return status;
+	}
+
+说明：该函数的作用是加载.so库，并将加载后的HAL模块映射到hw_module_t中。  
+(01) dlopen()的作用是打开.so库。  
+(02) dlsym(handle, sym)的作用是在.so库中查找符号为sym的变量，并返回该变量的地址；然后将其返回的地址转换为hw_module_t*类型的指针。先将load()介绍完，后面再详细说说说说dlsym()的原理。  
+(03) 在得到hw_module_t*类型的变量hmi之后，就将其赋值给pHmi然后返回。
+
+
+
+<a name="anchor2_5"></a>
+## 2.5 HAL_MODULE_INFO_SYM_AS_STR符号的原理
+
+先看看HAL_MODULE_INFO_SYM_AS_STR的定义
+
+	#define HAL_MODULE_INFO_SYM         HMI
+
+	#define HAL_MODULE_INFO_SYM_AS_STR  "HMI"
+
+说明：该宏定义在hardware/libhardware/include/hardware/hardware.h中。HAL_MODULE_INFO_SYM_AS_STR的名称是字符串HMI，而HAL_MODULE_INFO_SYM的值正好是HMI(符号)。 Gralloc中的HAL_MODULE_INFO_SYM符号对应的是private_module_t类型的变量，定义如下。
+
+
+	static struct hw_module_methods_t gralloc_module_methods = {
+			open: gralloc_device_open
+	};  
+			
+	struct private_module_t HAL_MODULE_INFO_SYM = {
+		base: { 
+			common: {
+				tag: HARDWARE_MODULE_TAG,
+				version_major: 1,
+				version_minor: 0,
+				id: GRALLOC_HARDWARE_MODULE_ID,
+				name: "Graphics Memory Allocator Module",
+				author: "The Android Open Source Project",
+				methods: &gralloc_module_methods
+			},
+			registerBuffer: gralloc_register_buffer,
+			unregisterBuffer: gralloc_unregister_buffer,
+			lock: gralloc_lock,
+			unlock: gralloc_unlock,
+		},
+		framebuffer: 0,
+		flags: 0,
+		numBuffers: 0,
+		bufferMask: 0,
+		lock: PTHREAD_MUTEX_INITIALIZER,
+		currentBuffer: 0,
+	};
+
+说明：该代码在hardware/libhardware/modules/gralloc/gralloc.cpp中。HAL_MODULE_INFO_SYM就是我们要查找的符号。  
+在load()中会将该符号对应的地址转换为hw_module_t类型；即，将private_module_t转换为hw_module_t类型。
+
+但是，private_module_t类型的变量是如何转换为hw_module_t类型的呢？
+
+[skywang-todo]
+
+如上图所示，private_module_t的第一个成员变量base指向一个gralloc_module_t结构体，而gralloc_module_t的第一个成员变量common又指向了一个hw_module_t结构体。这意味着，private_module_t结构体的指针可以用作一个gralloc_module_t或者hw_module_t结构体提针来使用。事实上，这是使用C语言来实现的一种继承关系，等价于结构体private_module_t继承结构体gralloc_module_t，而结构体gralloc_module_t继承hw_module_t结构体。   
+这样，我们就可以把在Gralloc模块中定义的符号HAL_MODULE_INFO_SYM看作是一个hw_module_t结构体。
+
