@@ -337,6 +337,9 @@ private_module_t中包含了private_handle_t和buffer_handle_t这两种结构体
     #endif
     };
 
-说明：该代码在hardware/libhardware/modules/gralloc/gralloc_priv.h中。private_handle_t是Gralloc中描述图形缓冲区的句柄的结构体，它在C编译器和C++编译器中编译得到的结果是不一样的。假设是在C++环境中编译的gralloc_priv.h，即编译环境定义有宏__cplusplus。那么，结构体private_handle_t就是从结构体native_handle_t继承下来的，它包含有1个文件描述符以及6个整数，以及三个静态成员变量。
+说明：该代码在hardware/libhardware/modules/gralloc/gralloc_priv.h中。private_handle_t是Gralloc中描述图形缓冲区的句柄的结构体，它在C编译器和C++编译器中编译得到的结果是不一样的。假设是在C++环境中编译的gralloc_priv.h，即编译环境定义有宏__cplusplus。那么，结构体private_handle_t就是从结构体native_handle_t继承下来的，它包含有1个文件描述符以及6个整数，以及三个静态成员变量。  
+(01)  
+(02)  
+(03) flag是图形缓冲区的标记。当flag的PRIV_FLAGS_FRAMEBUFFER位是1时，表示该图形缓冲区是从系统帧缓冲区中分配的；否则，该图形缓冲区是从内存中分配的。
 
 

@@ -658,5 +658,262 @@ private_module_t的第一个成员变量base指向一个gralloc_module_t结构�
 (02) gralloc_alloc()会依据用途来分配图形缓冲区。如果图形缓冲区是用来在系统帧缓冲区中进行渲染的，即usage的GRALLOC_USAGE_HW_FB位等于1，则调用gralloc_alloc_framebuffer()在系统帧缓冲区中进行分配；否则，则调用gralloc_alloc_buffer()在内存中进行分配。
 
 
+<a name="anchor5_2"></a>
+## 5.2 gralloc_alloc_framebuffer
+
+先看看在系统帧缓冲区中分配图形缓冲区的方法gralloc_alloc_buffer()。
+
+    static int gralloc_alloc_framebuffer(alloc_device_t* dev,
+            size_t size, int usage, buffer_handle_t* pHandle)
+    {
+        private_module_t* m = reinterpret_cast<private_module_t*>(
+                dev->common.module);
+        pthread_mutex_lock(&m->lock);
+        int err = gralloc_alloc_framebuffer_locked(dev, size, usage, pHandle);
+        pthread_mutex_unlock(&m->lock);
+        return err;
+    }
+
+说明：该函数会调用gralloc_alloc_framebuffer_locked()分配图形缓冲区。
+
+
+<a name="anchor5_3"></a>
+## 5.3 gralloc_alloc_framebuffer_locked
+
+    static int gralloc_alloc_framebuffer_locked(alloc_device_t* dev,
+            size_t size, int usage, buffer_handle_t* pHandle)
+    {
+        private_module_t* m = reinterpret_cast<private_module_t*>(
+                dev->common.module);
+
+        // 如果系统帧缓冲区还没有初始化，则对系统缓冲区进行初始化
+        if (m->framebuffer == NULL) {
+            int err = mapFrameBufferLocked(m);
+            if (err < 0) {
+                return err;
+            }
+        }
+
+        const uint32_t bufferMask = m->bufferMask;
+        const uint32_t numBuffers = m->numBuffers;
+        const size_t bufferSize = m->finfo.line_length * m->info.yres;
+        // 如果系统帧缓冲区只有一个图形缓冲区大小，则该缓冲区不能分配给应用程序使用，而只能作为系统的主缓冲区；
+        // 此时，在内存中分配图形缓冲区。
+        if (numBuffers == 1) {
+            int newUsage = (usage & ~GRALLOC_USAGE_HW_FB) | GRALLOC_USAGE_HW_2D;
+            return gralloc_alloc_buffer(dev, bufferSize, newUsage, pHandle);
+        }
+
+        if (bufferMask >= ((1LU<<numBuffers)-1)) {
+            return -ENOMEM;
+        }
+
+        // create a "fake" handles for it
+        intptr_t vaddr = intptr_t(m->framebuffer->base);
+        // hnd就是用来该图形缓冲区
+        private_handle_t* hnd = new private_handle_t(dup(m->framebuffer->fd), size,
+                private_handle_t::PRIV_FLAGS_FRAMEBUFFER);
+
+        // 在系统帧缓冲区中找到空闲的区域
+        for (uint32_t i=0 ; i<numBuffers ; i++) {
+            if ((bufferMask & (1LU<<i)) == 0) {
+                m->bufferMask |= (1LU<<i);
+                break;
+            }
+            vaddr += bufferSize;
+        }
+
+        hnd->base = vaddr;
+        // 偏移
+        hnd->offset = vaddr - intptr_t(m->framebuffer->base);
+        *pHandle = hnd;
+
+        return 0;
+    }
+
+说明：gralloc_alloc_framebuffer_locked()是在系统帧缓冲区中分配一个空闲的图形缓冲区给应用程序使用。但是如果系统帧缓冲区本身就只有一个图形缓冲区大小，则它不能分配给应用程序使用，而只能作为系统的主缓冲区；此时，就调用gralloc_alloc_buffer()从内存中分配图形缓冲区给应用程序。如果系统帧缓冲区中的有空闲的图形缓冲区，则找到该空闲区域并分配给应用程序。  
+此时，创建保存图形缓冲区的private_handle_t变量时，传入的参数是PRIV_FLAGS_FRAMEBUFFER；这个参数的意思表示该图形缓冲区是从系统帧缓冲区分配的。
+
+介绍完了从系统帧缓冲区中分配图形缓冲区，下面看看从内存中分配图形缓冲区的方法gralloc_alloc_buffer()。
+
+
+<a name="anchor5_4"></a>
+## 5.4 gralloc_alloc_buffer
+
+    static int gralloc_alloc_buffer(alloc_device_t* dev,
+            size_t size, int usage, buffer_handle_t* pHandle)
+    {
+        int err = 0;
+        int fd = -1;
+
+        // 进行字节对齐
+        size = roundUpToPageSize(size);
+
+        // 在"共享内存"中分配一个区域，区域的名称是"gralloc-buffer"，大小是size。
+        // 返回该区域的句柄。
+        fd = ashmem_create_region("gralloc-buffer", size);
+        if (fd < 0) {
+            ALOGE("couldn't create ashmem (%s)", strerror(-errno));
+            err = -errno;
+        }
+
+        if (err == 0) {
+            private_handle_t* hnd = new private_handle_t(fd, size, 0);
+            gralloc_module_t* module = reinterpret_cast<gralloc_module_t*>(
+                    dev->common.module);
+            err = mapBuffer(module, hnd);
+            if (err == 0) {
+                *pHandle = hnd;
+            }
+        }
+
+        ALOGE_IF(err, "gralloc failed err=%s", strerror(-err));
+
+        return err;
+    }
+
+说明：gralloc_alloc_buffer()的作用是从"共享内存"中分配一块区域作为图形缓冲区。该函数会先"共享内存"中划分一块区域，然后将该区域映射到用户空间，并将该区域的句柄等信息保存在private_handle_t中。
+
+<a name="anchor5_5"></a>
+## 5.5 mapBuffer
+
+    int mapBuffer(gralloc_module_t const* module,
+            private_handle_t* hnd)
+    {
+        void* vaddr;
+        return gralloc_map(module, hnd, &vaddr);
+    }
+
+说明：该代码在hardware/libhardware/modules/gralloc/mapper.cpp中。该函数会调用gralloc_map()。
+
+
+<a name="anchor5_6"></a>
+## 5.6 gralloc_map
+
+    static int gralloc_map(gralloc_module_t const* module,
+            buffer_handle_t handle,
+            void** vaddr)
+    {   
+        private_handle_t* hnd = (private_handle_t*)handle;
+        if (!(hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER)) {
+            size_t size = hnd->size;
+            void* mappedAddress = mmap(0, size,
+                    PROT_READ|PROT_WRITE, MAP_SHARED, hnd->fd, 0);
+            if (mappedAddress == MAP_FAILED) {
+                ALOGE("Could not mmap %s", strerror(errno));
+                return -errno;
+            }
+            hnd->base = intptr_t(mappedAddress) + hnd->offset;
+            //ALOGD("gralloc_map() succeeded fd=%d, off=%d, size=%d, vaddr=%p",
+            //        hnd->fd, hnd->offset, hnd->size, mappedAddress);
+        }
+        *vaddr = (void*)hnd->base;
+        return 0;
+    }
+
+说明：gralloc_map()的作用是将共享内存映射到用户空间，以便应用程序能够使用。
+
+
+
+<a name="anchor6"></a>
+# 6. 释放图形缓冲区
+
+<a name="anchor6_1"></a>
+## 6.1 gralloc_free
+
+    static int gralloc_free(alloc_device_t* dev,
+            buffer_handle_t handle)
+    {
+        if (private_handle_t::validate(handle) < 0)
+            return -EINVAL;
+
+        private_handle_t const* hnd = reinterpret_cast<private_handle_t const*>(handle);
+        if (hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER) {
+            // free this buffer
+            private_module_t* m = reinterpret_cast<private_module_t*>(
+                    dev->common.module);
+            const size_t bufferSize = m->finfo.line_length * m->info.yres;
+            int index = (hnd->base - m->framebuffer->base) / bufferSize;
+            m->bufferMask &= ~(1<<index);
+        } else {
+            gralloc_module_t* module = reinterpret_cast<gralloc_module_t*>(
+                    dev->common.module);
+            terminateBuffer(module, const_cast<private_handle_t*>(hnd));
+        }
+
+        close(hnd->fd);
+        delete hnd;
+        return 0;
+    }
+
+说明：gralloc_free()的作用是释放图形缓冲区。当hnd->flags标记的PRIV_FLAGS_FRAMEBUFFER位是1时，表示该图形缓冲区是从系统帧缓冲区中分配的；否则，该图形缓冲区是从内存中分配的。  
+(01) 当图形缓冲区是从系统帧缓冲区中分配的时候，就系统帧缓冲区找到被分配的这个图形缓冲区的序号index；然后，更改系统帧缓冲区的使用情况变量bufferMask的值。  
+(02) 当图形缓冲区是从内存中分配的时候，则调用terminateBuffer()来释放图形缓冲区。  
+
+
+<a name="anchor6_2"></a>
+## 6.2 terminateBuffer
+
+    int terminateBuffer(gralloc_module_t const* module,
+            private_handle_t* hnd)
+    {       
+        if (hnd->base) {
+            // this buffer was mapped, unmap it now
+            gralloc_unmap(module, hnd);
+        }       
+                
+        return 0;
+    }       
+
+说明：该代码在hardware/libhardware/modules/gralloc/mapper.cpp中。它会调用gralloc_unmap()来释放图形缓冲区。
+
+
+<a name="anchor6_3"></a>
+## 6.3 gralloc_unmap
+
+    static int gralloc_unmap(gralloc_module_t const* module,
+            buffer_handle_t handle)
+    {           
+        private_handle_t* hnd = (private_handle_t*)handle;
+        if (!(hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER)) {
+            void* base = (void*)hnd->base;
+            size_t size = hnd->size;
+            //ALOGD("unmapping from %p, size=%d", base, size);
+            if (munmap(base, size) < 0) {
+                ALOGE("Could not unmap %s", strerror(errno));
+            }
+        }
+        hnd->base = 0;
+        return 0;
+    }
+
+说明：gralloc_unmap()的作用是释放图形缓冲区。前面，在从内存中分配图形缓冲区时，是从"共享内存"中获取一块区域，然后通过mmap()将该区域映射到用户空间；现在要释放该区域，则调用munmap()解压映射即可。
+
+
+
+
+
+<a name="anchor7"></a>
+# 7. 注册图形缓冲区
+
+    int gralloc_register_buffer(gralloc_module_t const* module,
+            buffer_handle_t handle)
+    {           
+        if (private_handle_t::validate(handle) < 0)
+            return -EINVAL;
+            
+        private_handle_t* hnd = (private_handle_t*)handle;
+        ALOGD_IF(hnd->pid == getpid(),
+                "Registering a buffer in the process that created it. "
+                "This may cause memory ordering problems.");
+
+        void *vaddr;
+        return gralloc_map(module, handle, &vaddr);
+    }
+
+说明：该代码在hardware/libhardware/modules/gralloc/mapper.cpp中。
+说明：gralloc_map()的作用是将共享内存映射到用户空间，以便应用程序能够使用。
+
+
 
 [link_ui_02_datastruct]: /2014/09/11/UI-DataStruct/
