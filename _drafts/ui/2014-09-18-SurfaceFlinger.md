@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Android UI系统(四) SurfaceFlinger"
+title: "Android UI系统(四) BootAnimation流程"
 description: "android"
 category: android
 tags: [android]
