@@ -37,6 +37,8 @@ blockquote p{margin:0;padding:.5em 0;}
 	padding:.2em 1em;
 
 }
+table{ border: 4px solid #66ccff;} 
+table td{ border:solid 2px #71b9de}
 
 .listing-item time{color:#999999;}
 .listing-seperator{font-weight:bold;}
