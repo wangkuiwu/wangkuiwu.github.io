@@ -14,7 +14,7 @@ date: 2015-01-01 09:01
 
 > **目录**  
 > **1**. [触摸事件概述](#anchor1)  
-> **2**. Activity, ViewGroup, View中的触摸事件API[](#anchor2)  
+> **2**. [Activity, ViewGroup, View中的触摸事件API](#anchor2)  
 > **3**. [OnTouchListener接口](#anchor3)  
 
 

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Android消息机制"
+title: "Android消息机制架构和源码解析"
 description: "android"
 category: android
 tags: [android]
@@ -8,15 +8,51 @@ date: 2014-08-26 09:01
 ---
 
 
-> Android应用程序的消息处理机制包括3部分：消息循环、消息发送和消息处理。下面，我们分别对这3部分进行介绍。
+> 本文会介绍Android的消息处理机制。  
+
+> **目录**  
+> **1**. [Android消息机制的架构](#anchor1)  
+> **2**. [Android消息机制的源码解析](#anchor2)  
+> **2.1**. [消息循环](#anchor2_1)  
+> **2.2**. [消息的发送](#anchor2_2)  
+> **2.3**. [消息的处理](#anchor2_3)  
+
 > 注意：本文是基于Android 4.4.2版本进行介绍的！
 
 
 
-# 1. 消息循环
+<a name="anchor1"></a>
+# Android消息机制的架构
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue01.jpg"><img src="" alt="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue01.jpg" /></a>
 
 
-Looper是消息循环类。下面先看看主线程中使用Looper的例子。
+上面是消息机制的框架图。  
+(01) Looper是消息循环类，它包括了mQueue成员变量；mQueue是消息队列MessageQueue的实例。Looper还包含了loop()方法，通过调用loop()就能进入到消息循环中。  
+(02) MessageQueue是消息队列类，它包含了mMessages成员；mMessages是消息Message的实例。MessageQueue提供了next()方法来获取消息队列的下一则消息。  
+(03) Message是消息类。Message包含了next，next是Message的实例；由此可见，Message是一个单链表。Message还包括了target成员，target是Handler实例。此外，它还包括了arg1,arg2,what,obj等参数，它们都是用于记录消息的相关内容。  
+(04) Handler是消息句柄类。Handler提供了sendMessage()来向消息队列发送消息；发送消息的API有很多，它们的原理都是一样的，这里仅仅只列举了sendMessage()一个。  此外，Handler还提供了handleMessage()来处理消息队列的消息；这样，用户通过覆盖handleMessage()就能处理相应的消息。  
+消息机制位于Java层的框架主要就有上面4个类所组成。在C++层，比较重要的是NativeMessageQueue和Loop这两个类。  
+当我们启动一个APK时，ActivityManagerService会为我们的Activity创建并启动一个主线程(ActivityThread对象)；在启动主线程时，就会创建主线程对应的消息循环，并通过调用loop()进入到消息循环中。当我们需要往消息队列发送消息时，可以继承Handler类，然后创建Handler类的实例；接着，通过该实例的sendMessage()方法就可以向消息队列发送消息。  也就是说，主线程的消息队列也一直存在的。当消息队列中没有消息时，消息队列会进入空闲等待状态；当有消息时，则消息队列会进入运行状态，进而将相应的消息发送给handleMessage()进行处理。
+
+<br>
+下面是消息机制的流程图：消息队列没有消息时进入空闲等待，有消息时才获取并发送消息。这种机制是通过pipe(管道)机制实现的，关于pipe机制的相关内容，后面再详细说明。
+
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue02.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue02.jpg" alt="" /></a>
+
+
+
+
+<a name="anchor2"></a>
+# Android消息机制的源码解析
+
+下面从"消息循环、消息发送和消息处理"这3个方面对消息机制进行介绍。
+
+<a name="anchor2_1"></a>
+## 1. 消息循环
+
+
+Looper是消息循环类。下面先看看ActivityThread中是如何使用Looper的。
 
 
     public final class ActivityThread {
@@ -189,6 +225,7 @@ Looper是消息循环类。下面先看看主线程中使用Looper的例子。
 > 关于管道，简单来说，管道就是一个文件。  
 > 在管道的两端，分别是两个打开文件文件描述符，这两个打开文件描述符都是对应同一个文件，其中一个是用来读的，别一个是用来写的。  
 > 一般的使用方式就是，一个线程通过读文件描述符中来读管道的内容，当管道没有内容时，这个线程就会进入等待状态，而另外一个线程通过写文件描述符来向管道中写入内容，写入内容的时候，如果另一端正有线程正在等待管道中的内容，那么这个线程就会被唤醒。这个等待和唤醒的操作是如何进行的呢，这就要借助Linux系统中的epoll机制了。 Linux系统中的epoll机制为处理大批量句柄而作了改进的poll，是Linux下多路复用IO接口select/poll的增强版本，它能显著减少程序在大量并发连接中只有少量活跃的情况下的系统CPU利用率。
+
 
 (01) pipe(wakeFds)，该函数创建了两个管道句柄。  
 (02) mWakeReadPipeFd=wakeFds[0]，是读管道的句柄。   
@@ -456,7 +493,8 @@ Looper是消息循环类。下面先看看主线程中使用Looper的例子。
 
 
 
-# 2. 消息的发送
+<a name="anchor2_2"></a>
+## 2. 消息的发送
 
 还是以ActivityThread为例，看看如何发送消息。在启动Activity时，会调用scheduleLaunchActivity()，下面看看scheduleLaunchActivity()是如何发送消息的。
 
@@ -681,7 +719,8 @@ Looper是消息循环类。下面先看看主线程中使用Looper的例子。
 
 
 
-# 3. 消息的处理
+<a name="anchor2_3"></a>
+## 3. 消息的处理
 
 前面介绍了"消息的发送过程"；而且我们又知道，在"消息循环"中，会不断读取消息，然后调用dispatchMessage()来分发处理。
 
@@ -820,7 +859,7 @@ Looper是消息循环类。下面先看看主线程中使用Looper的例子。
 <br>
 至此，消息机制的发送/接受/处理消息部分都介绍完毕了！总的来说：  
 (01)，应用程序先通过Looper.prepareMainLooper()来创建消息队列。在创建消息队列的过程中，会创建Looper对象，MessageQueue对象，并调用JNI函数；最终，通过管道来进入空闲等待状态。  
-(02)，当应用程序调用sendMessage()或其他类似接口发送消息时，消息会被添加到消息队列；并最终会先管道中写入内容，从而管道上处于空闲等待状态的主线程。  
+(02)，当应用程序调用sendMessage()或其他类似接口发送消息时，消息会被添加到消息队列；并最终会先管道中写入内容，从而唤醒管道上处于空闲等待状态的主线程。  
 (03)，管道上的空闲状态的主线程被唤醒之后，就会读出消息队列的消息，然后通过dispatchMessage()来分发处理。最终，消息会通过handleMessage()来进行处理。
 
 

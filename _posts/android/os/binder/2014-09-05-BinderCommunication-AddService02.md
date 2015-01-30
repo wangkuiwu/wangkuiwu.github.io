@@ -796,7 +796,7 @@ ServiceManager执行完binder_transaction()后，回到binder_thread_write()中�
 于是，ServiceManager继续它的循环；当它再次调用ioctl()，进而进入到Binder驱动中读取请求时；由于此时的待处理事务队列为空，因此，ServiceManager会再次进入中断等待状态，等待Client的请求。
 
 
-<br>
+<br/>
 至此，MediaPlayerService进程的addService的请求处理部分就讲解完了。在继续了解请求的反馈之前，先回顾一下本部分的内容。
 
 <a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/addService02_deal.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/binder/addService02_deal.jpg" alt="" /></a>
