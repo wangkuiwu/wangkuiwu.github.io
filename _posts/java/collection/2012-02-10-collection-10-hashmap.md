@@ -96,7 +96,7 @@ HashMap的声明
 
 HashMap与Map关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection10.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection10.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection10.jpg)
 
 从图中可以看出：  
 (01) HashMap继承于AbstractMap类，实现了Map接口。Map是"key-value键值对"接口，AbstractMap实现了"键值对"的通用函数接口。  

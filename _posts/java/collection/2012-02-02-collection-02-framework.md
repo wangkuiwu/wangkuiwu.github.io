@@ -10,7 +10,7 @@ date: 2012-02-02 09:01
 
 本文，我们将对Collection进行概括。下面先看看Collection的一些框架类的关系图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection02.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection02.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection02.jpg)
 
 Collection是一个接口，它主要的两个分支是：**List** 和 **Set**。
 

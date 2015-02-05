@@ -107,7 +107,7 @@ ArrayList类声明
 
 ArrayList与Collection关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection03.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection03.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection03.jpg)
 
 ArrayList包含了两个重要的对象：elementData 和 size。
 

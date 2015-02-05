@@ -44,8 +44,8 @@ Stack的声明
 
 Stack和Collection的关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection07.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection07.jpg" alt="" /></a>
  
+![img](/media/pic/java/collection/collection07.jpg)
 
 Stack的构造函数
 

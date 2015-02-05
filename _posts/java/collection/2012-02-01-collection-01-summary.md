@@ -13,7 +13,7 @@ Java集合主要可以划分为4个部分：List列表、Set集合、Map映射�
 
 Java集合工具包框架如下图。
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection01.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection01.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection01.jpg)
 
 说明：看上面的框架图，先抓住它的主干，即Collection和Map。
 

@@ -93,7 +93,7 @@ Hashtable的声明
 
 Hashtable与Map关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection11.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection11.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection11.jpg)
 
 从图中可以看出：  
 (01) Hashtable继承于Dictionary类，实现了Map接口。Map是"key-value键值对"接口，Dictionary是声明了操作"键值对"函数接口的抽象类。  

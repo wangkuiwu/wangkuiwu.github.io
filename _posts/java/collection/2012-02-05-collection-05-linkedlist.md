@@ -118,7 +118,7 @@ LinkedList的声明
 
 LinkedList与Collection关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection05.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection05.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection05.jpg)
 
 LinkedList的本质是双向链表。  
 (01) LinkedList继承于AbstractSequentialList，并且实现了Dequeue接口。  

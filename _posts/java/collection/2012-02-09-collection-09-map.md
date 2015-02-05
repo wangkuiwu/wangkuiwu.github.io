@@ -12,7 +12,7 @@ date: 2012-02-09 09:01
 
 首先，我们看看Map架构。
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection09.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection09.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection09.jpg)
 
 如上图：
 

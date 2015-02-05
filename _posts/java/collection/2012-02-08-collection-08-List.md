@@ -25,7 +25,7 @@ date: 2012-02-08 09:01
 
 先回顾一下List的框架图
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection08.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection08.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection08.jpg)
 
 (01) List 是一个接口，它继承于Collection的接口。它代表着有序的队列。  
 (02) AbstractList 是一个抽象类，它继承于AbstractCollection。AbstractList实现List接口中除size()、get(int location)之外的函数。  

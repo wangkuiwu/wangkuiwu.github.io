@@ -109,7 +109,7 @@ TreeSet的声明
 
 TreeSet与Collection关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection17.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection17.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection17.jpg)
 
 从图中可以看出：  
 (01) TreeSet继承于AbstractSet，并且实现了NavigableSet接口。  

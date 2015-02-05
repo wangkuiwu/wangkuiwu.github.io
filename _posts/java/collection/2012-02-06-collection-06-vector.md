@@ -113,7 +113,7 @@ Vector的声明
 
 Vector与Collection关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection06.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection06.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection06.jpg)
 
 Vector的数据结构和ArrayList差不多，它包含了3个成员变量：**elementData** , **elementCount**， **capacityIncrement**。
 

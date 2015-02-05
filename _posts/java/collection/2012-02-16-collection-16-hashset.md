@@ -82,7 +82,7 @@ public class HashSet<E>
 
 HashSet与Map关系如下图：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection16.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection16.jpg" alt="" /></a>
+![img](/media/pic/java/collection/collection16.jpg)
 
 从图中可以看出：  
 (01) HashSet继承于AbstractSet，并且实现了Set接口。  

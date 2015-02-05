@@ -13,8 +13,8 @@ date: 2012-02-15 09:01
 
 首先，我们看看Set架构。
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection15.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/pictures/java/collections/collection15.jpg" alt="" /></a>
  
+![img](/media/pic/java/collection/collection15.jpg)
 
 (01) Set 是继承于Collection的接口。它是一个不允许有重复元素的集合。  
 (02) AbstractSet 是一个抽象类，它继承于AbstractCollection，AbstractCollection实现了Set中的绝大部分函数，为Set的实现类提供了便利。  
