@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Linux学习基础篇03 ubuntu中常用软件安装"
+title: "Linux学习基础篇03 ubuntu软件(一) 必备软件"
 description: "linux ubuntu"
 category: linux
 tags: [linux]
@@ -40,7 +40,31 @@ ubuntu中比较常用的输入法有ibus和fcitx。两种输入法，择其一�
 
 ## 2.1 ibus的安装
 
-**TODO**
+
+**(01) 安装ibus以及拼音包**
+
+    $ sudo apt-get install ibus ibus-clutter ibus-gtk ibus-gtk3 ibus-qt4
+    $ sudo apt-get install ibus-pinyin
+
+**(02) 安装中文语言包**
+
+进入"System Settings"(系统设置) --> "Language Support"(语言支持)。  
+在"Language Support"(语言支持)中找到"Install/Remove Languages(添加或删除语言)"，并点击打开"添加或删除语言对话框"。  
+在对话框中找到"Chinese(simplified)"，即中文(简体)，进行安装。  
+安装完毕之后，重启X系统 或 重启操作系统。
+
+**(03) 设iBus为默认输入法**
+
+进入到"Language Support"(语言支持)中，将"Keyboard input method system"(键盘输入方式系统)设为iBus。
+
+**(04) 在iBus中添加拼音**
+
+打开"iBus"，中文名是"键盘输入法"。方法是通过文件浏览器，进入目录/usr/share/applications。
+
+在iBus设置中，将"汉语拼音"设为选中的输入法即可！
+
+以上设置都完成之后， 重启X系统 或 重启操作系统，即可！
+
 
 ## 2.2 fcitx的安装
 
