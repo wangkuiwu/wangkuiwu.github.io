@@ -4,11 +4,11 @@ title: "Java 集合系列16之 HashSet详细介绍(源码解析)和使用示例"
 description: "java collection"
 category: java
 tags: [java]
-date: 2012-02-15 09:01
+date: 2012-02-16 09:01
 ---
 
  
-> 这一章，我们对HashSet进行学习。
+> 这一章，我们对HashSet进行学习。  
 > 我们先对HashSet有个整体认识，然后再学习它的源码，最后再通过实例来学会使用HashSet。
 
 > **目录**  
