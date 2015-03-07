@@ -14,7 +14,6 @@ date: 2012-02-18 09:01
 > [第1部分 Iterator和Enumeration区别](#anchor1)   
 > [第2部分 Iterator和Enumeration实例](#anchor2)   
 
-转载请注明出处：http://www.cnblogs.com/skywang12345/admin/EditPosts.aspx?postid=3311275
 
  
  
@@ -51,7 +50,7 @@ Iterator也是一个接口，它的源码如下：
 看完代码了，我们再来说说它们之间的区别。
 
 **(01) 函数接口不同**  
-&nbsp;&nbsp;&nbsp;&nbsp;Enumeration只有2个函数接口。通过Enumeration，我们只能读取集合的数据，而不能对数据进行修改。  
+&nbsp;&nbsp;&nbsp;&nbsp; Enumeration只有2个函数接口。通过Enumeration，我们只能读取集合的数据，而不能对数据进行修改。  
 &nbsp;&nbsp;&nbsp;&nbsp;Iterator只有3个函数接口。Iterator除了能读取集合的数据之外，也能数据进行删除操作。
 
 **(02) Iterator支持fail-fast机制，而Enumeration不支持。**  

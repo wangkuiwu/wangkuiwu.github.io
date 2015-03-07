@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Java 集合系列19之 Comparable和Comparator比较"
+title: "Java 集合系列扩展(一) Comparable和Comparator比较"
 description: "java collection"
 category: java
 tags: [java]

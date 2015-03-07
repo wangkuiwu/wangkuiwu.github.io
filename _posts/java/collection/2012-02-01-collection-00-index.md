@@ -46,6 +46,11 @@ date: 2012-02-01 00:01
 
 [18. Java 集合系列18之 Iterator和Enumeration比较][link_java_collection_18]
 
+[19. Java 集合系列扩展(一) Comparable和Comparator比较][link_java_collection_19]
+
+[20. Java 集合系列扩展(二) hashCode()和equals()的若干问题解答][link_java_collection_20]
+
+
 [link_java_collection_01]: /2012/02/01/collection-01-summary
 [link_java_collection_02]: /2012/02/02/collection-02-framework
 [link_java_collection_03]: /2012/02/03/collection-03-arraylist
@@ -64,3 +69,5 @@ date: 2012-02-01 00:01
 [link_java_collection_16]: /2012/02/16/collection-16-hashset
 [link_java_collection_17]: /2012/02/17/collection-17-treeset
 [link_java_collection_18]: /2012/02/18/collection-18-iterator_enumeration
+[link_java_collection_19]: /2012/02/19/comparable-comparator
+[link_java_collection_20]: /2012/02/20/hashcode-and-equals
