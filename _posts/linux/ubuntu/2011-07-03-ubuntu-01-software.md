@@ -33,19 +33,24 @@ date: 2011-07-03 09:01
 
 
 
-<a name="anchor1"></a>
+<a name="anchor2"></a>
 # 2. 新立得/软件中心安装常用软件
 
 (01) 浏览器chromium
 
+打开Software Center之后，搜索Chromium。然后选择安装。
 
-<a name="anchor2"></a>
-# 2. 安装中文输入法ibus
+
+<a name="anchor3"></a>
+# 3. 手动安装的软件
+
+<a name="anchor3_1"></a>
+## 3.1 安装中文输入法ibus
 
 ubuntu中比较常用的输入法有ibus和fcitx。两种输入法，择其一安装即可！推荐使用ibus。
 
 
-## 2.1 ibus的安装
+### 3.1.1 ibus的安装
 
 
 **(01) 安装ibus以及拼音包**
@@ -73,7 +78,7 @@ ubuntu中比较常用的输入法有ibus和fcitx。两种输入法，择其一�
 以上设置都完成之后， 重启X系统 或 重启操作系统，即可！
 
 
-## 2.2 fcitx的安装
+### 3.1.2 fcitx的安装
 
 下面介绍ubuntu中fcitx输入法的安装步骤。
 
@@ -104,7 +109,9 @@ ubuntu中比较常用的输入法有ibus和fcitx。两种输入法，择其一�
     $ sudo reboot
 
 
-# 安装BC
+
+<a name="anchor3_2"></a>
+## 3.2 安装BC
 
 下面介绍安装beyond compare的步骤。
 
@@ -117,10 +124,8 @@ beyond compare key:
  
 
 
-# 安装VirtualBox虚拟机
-
-
-**TODO**
+<a name="anchor3_3"></a>
+## 3.3 安装VirtualBox虚拟机
 
 下面介绍ubuntu中安装VirtualBox虚拟机，并在虚拟机中安装Win 7操作系统的步骤。
 
@@ -130,7 +135,7 @@ beyond compare key:
 
  2. 下载win7 32bit镜像
 
-百度网盘上
+百度网盘上。[点击下载](http://pan.baidu.com/s/1jGgkrRK)，密码：tc3x
 
 
 

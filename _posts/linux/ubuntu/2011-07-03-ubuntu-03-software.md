@@ -8,8 +8,8 @@ date: 2011-07-03 09:03
 ---
 
 > **目录**  
-> [](#anchor1)   
-> [](#anchor2)   
+> [1. 安装minicom](#anchor1)   
+> [2. 配置minicom](#anchor2)   
 
 
 <a name="anchor1"></a>
@@ -30,6 +30,17 @@ date: 2011-07-03 09:03
 
     $ sudo minicom -s
 
-说明：配置
 
-TODO
+
+<a name="anchor3"></a>
+# 3. minicom常用功能
+
+**3.1 开启换行功能**
+
+    $ sudo minicom -w
+
+
+**3.2 lrz串口传输公呢**
+
+启动minicom之后，Ctrl + A, Z
+
