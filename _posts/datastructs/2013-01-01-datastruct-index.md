@@ -1,72 +1,16 @@
 ---
 layout: post
-title: "博客目录(持续更新中...)"
-description: "android"
-category: android
-tags: [android]
-date: 2100-01-01 00:01
+title: "数据结构与算法系列 目录(Category)"
+description: "datastructure algrithm"
+category: datastructure
+tags: [datastructure]
+date: 2013-01-01 00:01
 ---
 
 
-> 本文是目录索引
+> 最近抽空整理了"数据结构和算法"的相关文章。在整理过程中，对于每种数据结构和算法分别给出"C"、"C++"和"Java"这三种语言的实现；实现语言虽不同，但原理如出一辙。因此，读者在了解和学习的过程中，择其一即可！
 
-> **目录**  
-> **1**. [Java](#anchor1)  
-> **2**. [数据结构和算法](#anchor2)  
-> **3**. [Android](#anchor3)  
-
-
-
-<a name="anchor1"></a>
-# 1. Java
-
-1.1 Java基础文章  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 随机数][link_java_basic_01]  
-
-
-1.2 Java集合系列文章  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列目录(Category)][link_java_collection_00]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列01之 总体框架][link_java_collection_01]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列02之 Collection架构][link_java_collection_02]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列03之 ArrayList详细介绍(源码解析)和使用示例][link_java_collection_03]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列04之 fail-fast总结(通过ArrayList来说明fail-fast的原理、解决办法)][link_java_collection_04]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列05之 LinkedList详细介绍(源码解析)和使用示例][link_java_collection_05]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列06之 Vector详细介绍(源码解析)和使用示例][link_java_collection_06]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列07之 Stack详细介绍(源码解析)和使用示例][link_java_collection_07]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列08之 List总结(LinkedList, ArrayList等使用场景和性能分析)][link_java_collection_08]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列09之 Map架构][link_java_collection_09]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列10之 HashMap详细介绍(源码解析)和使用示例][link_java_collection_10]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列11之 Hashtable详细介绍(源码解析)和使用示例][link_java_collection_11]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列12之 TreeMap详细介绍(源码解析)和使用示例][link_java_collection_12]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列13之 WeakHashMap详细介绍(源码解析)和使用示例][link_java_collection_13]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列14之 Map总结(HashMap, Hashtable, TreeMap, WeakHashMap等使用场景)][link_java_collection_14]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列15之 Set架构][link_java_collection_15]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列16之 HashSet详细介绍(源码解析)和使用示例][link_java_collection_16]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列17之 TreeSet详细介绍(源码解析)和使用示例][link_java_collection_17]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列18之 Iterator和Enumeration比较][link_java_collection_18]    
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列扩展(一) Comparable和Comparator比较][link_java_collection_19]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 集合系列扩展(二) hashCode()和equals()的若干问题解答][link_java_collection_20]
-
-1.3 Java 时间相关内容  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容的目录(Category)][link_java_time_00]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容01 Calendar][link_java_time_01]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容02 万年历和自定义Calendar接口][link_java_time_02]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容03 Date][link_java_time_03]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容04 DateFormat][link_java_time_04]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容05 SimpleDateFormat][link_java_time_05]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容06 Locale][link_java_time_06]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 时间相关内容07 Time][link_java_time_07]
-
-1.4 Java 字符串系列  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 字符串系列01 String详解, String和CharSequence区别, StringBuilder和StringBuffer的区别][link_java_charsequence_01]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 字符串系列02 StringBuilder详解][link_java_charsequence_02]  
-&nbsp;&nbsp;&nbsp;&nbsp; [Java 字符串系列03 StringBuffer详解][link_java_charsequence_03]  
-
-
-<a name="anchor2"></a>
-# 2. 数据结构和算法(64篇)
-
-[数据结构和算法 目录][link_ds_index] 
+> 下面是整理数据数据和算法的目录表，对于每一种按照C/C++/Java进行了划分，方便查阅。若文章有错误或纰漏，请不吝指正。谢谢！
 
 |              |                   C                |                   C++              |               Java                 |
 | ------------ | ---------------------------------- | ---------------------------------- | ---------------------------------- |
@@ -111,57 +55,6 @@ date: 2100-01-01 00:01
 |              | [桶排序][link_algrithm_bucket-sort] | [桶排序][link_algrithm_bucket-sort] | [桶排序][link_algrithm_bucket-sort] |
 |              | [基数排序][link_algrithm_radix-sort] | [基数排序][link_algrithm_radix-sort] | [基数排序][link_algrithm_radix-sort] |
 
-
-
-
-
-
-
-<!-- Java 链接 -->
-[link_java_basic_01]: /2012/03/01/basic-01-random
-
-[link_java_collection_00]: /2012/02/01/collection-00-index
-[link_java_collection_01]: /2012/02/01/collection-01-summary
-[link_java_collection_02]: /2012/02/02/collection-02-framework
-[link_java_collection_03]: /2012/02/03/collection-03-arraylist
-[link_java_collection_04]: /2012/02/04/collection-04-fail-fast
-[link_java_collection_05]: /2012/02/05/collection-05-linkedlist
-[link_java_collection_06]: /2012/02/06/collection-06-vector
-[link_java_collection_07]: /2012/02/07/collection-07-stack
-[link_java_collection_08]: /2012/02/08/collection-08-List
-[link_java_collection_09]: /2012/02/09/collection-09-map
-[link_java_collection_10]: /2012/02/10/collection-10-hashmap
-[link_java_collection_11]: /2012/02/11/collection-11-hashtable
-[link_java_collection_12]: /2012/02/12/collection-12-treemap
-[link_java_collection_13]: /2012/02/13/collection-13-weakhashmap
-[link_java_collection_14]: /2012/02/14/collection-14-mapsummary
-[link_java_collection_15]: /2012/02/15/collection-15-set
-[link_java_collection_16]: /2012/02/16/collection-16-hashset
-[link_java_collection_17]: /2012/02/17/collection-17-treeset
-[link_java_collection_18]: /2012/02/18/collection-18-iterator_enumeration
-[link_java_collection_19]: /2012/02/19/comparable-comparator
-[link_java_collection_20]: /2012/02/20/hashcode-and-equals
-
-
-[link_java_time_00]: /2012/04/01/time-index
-[link_java_time_01]: /2012/04/01/time
-[link_java_time_02]: /2012/04/02/time
-[link_java_time_03]: /2012/04/03/time
-[link_java_time_04]: /2012/04/04/time
-[link_java_time_05]: /2012/04/05/time
-[link_java_time_06]: /2012/04/06/time
-[link_java_time_07]: /2012/04/07/time
-
-
-[link_java_charsequence_01]: /2012/04/11/charsequence
-[link_java_charsequence_02]: /2012/04/12/charsequence
-[link_java_charsequence_03]: /2012/04/13/charsequence
-
-
-
-
-<!-- 数据结构和算法 链接 -->
-[link_ds_index]: /2013/01/01/datastruct-index
 
 [link_ds_linear_dlink01]: /2013/01/01/dlink
 [link_ds_linear_dlink02]: /2013/01/01/dlink02
@@ -221,6 +114,3 @@ date: 2100-01-01 00:01
 [link_algrithm_merge-sort]:   /2013/05/08/merge-sort
 [link_algrithm_bucket-sort]:  /2013/05/09/bucket-sort
 [link_algrithm_radix-sort]:   /2013/05/10/radix-sort
-
-
-
