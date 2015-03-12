@@ -19,7 +19,7 @@ date: 2014-03-24 09:43
 
 存储10,20,30,40,50的数组的示意图如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/array_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/array_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/array_01.jpg)
 
 数组的特点是：数据是连续的；随机访问速度快。
 
@@ -34,14 +34,14 @@ date: 2014-03-24 09:43
 
 单链表的示意图如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/slink_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/slink_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/slink_01.jpg)
 
 表头为空，表头的后继节点是"节点10"(数据为10的节点)，"节点10"的后继节点是"节点20"(数据为10的节点)，...
 
 
 ## 1. 单链表删除节点
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/slink_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/slink_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/slink_02.jpg)
 
  **删除"节点30"**
 
@@ -51,7 +51,7 @@ date: 2014-03-24 09:43
 
 ## 2. 单链表添加节点
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/slink_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/slink_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/slink_03.jpg)
 
 **在"节点10"与"节点20"之间添加"节点15"**
 
@@ -70,14 +70,14 @@ date: 2014-03-24 09:43
 
 双链表的示意图如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/dlink_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/dlink_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/dlink_01.jpg)
 
 表头为空，表头的后继节点为"节点10"(数据为10的节点)；"节点10"的后继节点是"节点20"(数据为10的节点)，"节点20"的前继节点是"节点10"；"节点20"的后继节点是"节点30"，"节点30"的前继节点是"节点20"；...；末尾节点的后继节点是表头。
 
 
 ## 1. 双链表删除节点
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/dlink_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/dlink_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/dlink_02.jpg)
 
 **删除"节点30"**
 
@@ -89,7 +89,7 @@ date: 2014-03-24 09:43
 
 ## 2. 双链表添加节点
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/dlink_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/dlink_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/dlink_03.jpg)
 
 **在"节点10"与"节点20"之间添加"节点15"**
 

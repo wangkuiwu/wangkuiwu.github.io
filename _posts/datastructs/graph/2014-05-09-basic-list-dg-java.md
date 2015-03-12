@@ -22,7 +22,7 @@ date: 2014-05-09 18:25
 邻接表有向图是指通过邻接表表示的有向图。
 
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/08.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/08.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/08.jpg)
 
 上面的图G2包含了"A,B,C,D,E,F,G"共7个顶点，而且包含了"<A,B>,<B,C>,<B,E>,<B,F>,<C,E>,<D,C>,<E,B>,<E,D>,<F,G>"共9条边。
 

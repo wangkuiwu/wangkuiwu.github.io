@@ -29,7 +29,7 @@ date: 2014-05-05 09:30
 
 ### 2.1 无向图
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/01.jpg)
 
 上面的图G0是无向图，无向图的所有的边都是不区分方向的。G0=(V1,{E1})。其中，
 
@@ -39,7 +39,7 @@ date: 2014-05-05 09:30
 
 ### 2.2 有向图
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/02.jpg)
 
 上面的图G2是有向图。和无向图不同，有向图的所有的边都是有方向的！ G2=(V2,{A2})。其中，
 
@@ -89,7 +89,7 @@ date: 2014-05-05 09:30
 
 在学习"哈夫曼树"的时候，了解过"权"的概念。图中权的概念与此类似。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/03.jpg)
 
 上面就是一个带权的图。
 
@@ -107,17 +107,17 @@ date: 2014-05-05 09:30
 假设图中顶点数为n，则邻接矩阵定义为：
 
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/04.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/04.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/04.jpg)
 
 
 <br/>
 下面通过示意图来进行解释。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/05.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/05.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/05.jpg)
 
 图中的G1是无向图和它对应的邻接矩阵。  
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/06.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/06.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/06.jpg)
 
 图中的G2是无向图和它对应的邻接矩阵。
 
@@ -128,11 +128,11 @@ date: 2014-05-05 09:30
 
 邻接表是图的一种链式存储表示方法。它是改进后的"邻接矩阵"，它的缺点是不方便判断两个顶点之间是否有边，但是相对邻接矩阵来说更省空间。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/07.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/07.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/07.jpg)
 
 图中的G1是无向图和它对应的邻接矩阵。  
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/08.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/08.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/08.jpg)
 
 图中的G2是无向图和它对应的邻接矩阵。
 

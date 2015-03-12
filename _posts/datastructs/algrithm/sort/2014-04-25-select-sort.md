@@ -59,7 +59,7 @@ date: 2014-04-25 09:28
 
 下面以数列{20,40,30,10,60,50}为例，演示它的选择排序过程。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/select_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/select_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/select_01.jpg)
 
 
 **排序流程**

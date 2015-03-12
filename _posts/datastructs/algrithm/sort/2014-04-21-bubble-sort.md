@@ -46,7 +46,7 @@ date: 2014-04-21 09:18
 
 下面以数列*{20,40,30,10,60,50}*为例，演示它的冒泡排序过程(如下图)。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/bubble_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/bubble_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/bubble_01.jpg)
 
 我们先分析**第1趟**排序
 

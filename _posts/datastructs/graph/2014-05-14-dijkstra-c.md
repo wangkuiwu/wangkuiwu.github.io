@@ -55,12 +55,12 @@ date: 2014-05-14 09:25
 <a name="anchor2"></a>
 # 迪杰斯特拉算法图解
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/dijkstra/01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/dijkstra/01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/dijkstra/01.jpg)
 
 
 以上图G4为例，来对迪杰斯特拉进行算法演示(以第4个顶点D为起点)。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/dijkstra/02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/dijkstra/02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/dijkstra/02.jpg)
 
 
 **初始状态**：S是已计算出最短路径的顶点集合，U是未计算除最短路径的顶点的集合！   

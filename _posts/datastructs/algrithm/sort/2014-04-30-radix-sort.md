@@ -28,7 +28,7 @@ date: 2014-04-30 09:27
 
 通过基数排序对数组{53, 3, 542, 748, 14, 214, 154, 63, 616}，它的示意图如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/radix_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/radix_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/radix_01.jpg)
 
 在上图中，首先将所有待比较树脂统一为统一位数长度，接着从最低位开始，依次进行排序。
 
@@ -134,11 +134,11 @@ radix_sort(a, n)的作用是对数组a进行排序。
 
 (01) 个位的数值范围是[0,10)。因此，创建桶数组buckets[]，将数组按照个位数值添加到桶中。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/radix_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/radix_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/radix_02.jpg)
 
 (02) 接着是根据桶数组buckets[]来进行排序。假设将排序后的数组存在output[]中；找出output[]和buckets[]之间的联系就可以对数据进行排序了。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/radix_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/radix_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/radix_03.jpg)
 
 
 

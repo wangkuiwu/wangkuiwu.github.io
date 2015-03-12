@@ -72,7 +72,7 @@ date: 2014-03-25 09:27
 
 **offsetof图解**
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/linux_dlink_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/linux_dlink_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/linux_dlink_01.jpg)
 
 TYPE是结构体，它代表"整体"；而MEMBER是成员，它是整体中的某一部分。
 
@@ -145,7 +145,7 @@ TYPE是结构体，它代表"整体"；而MEMBER是成员，它是整体中的�
 
 **container_of图解**
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/linux_dlink_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/linux_dlink_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/linux_dlink_02.jpg)
 
 type是结构体，它代表"整体"；而member是成员，它是整体中的某一部分，而且member的地址是已知的。
 
@@ -169,7 +169,7 @@ Linux双向链表的定义主要涉及到两个文件：
 
 假设存在一个社区中有很多人，每个人都有姓名和年龄。通过双向链表将人进行关联的模型图如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/linux_dlink_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/linear/linux_dlink_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/linear/linux_dlink_03.jpg)
 
 person代表人，它有name和age属性。为了通过双向链表对person进行链接，我们在person中添加了list_head属性。通过list_head，我们就将person关联起来了。
 

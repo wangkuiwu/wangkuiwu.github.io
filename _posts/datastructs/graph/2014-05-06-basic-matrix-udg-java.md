@@ -20,7 +20,7 @@ date: 2014-05-06 18:25
 
 邻接矩阵无向图是指通过邻接矩阵表示的无向图。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/05.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/05.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/05.jpg)
 
 上面的图G1包含了"A,B,C,D,E,F,G"共7个顶点，而且包含了"(A,C),(A,D),(A,F),(B,C),(C,D),(E,G),(F,G)"共7条边。由于这是无向图，所以边(A,C)和边(C,A)是同一条边；这里列举边时，是按照字母先后顺序列举的。
 

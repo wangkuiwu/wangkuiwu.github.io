@@ -26,7 +26,7 @@ date: 2014-04-08 18:30
 > (01) 键值的作用是来比较节点的大小，从而对节点进行排序。  
 > (02) 零距离(英文名NPL，即Null Path Length)则是从一个节点到一个"最近的不满节点"的路径长度。不满节点是指该该节点的左右孩子至少有有一个为NULL。叶节点的NPL为0，NULL节点的NPL为-1。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_01.jpg?raw=true" alt="" width="400"/></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_01.jpg)
 
 上图是一颗左倾堆，它满足左倾堆的基本性质：
 
@@ -53,7 +53,7 @@ date: 2014-04-08 18:30
 <br/>
 下面通过图文演示合并以下两个堆的过程。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_02.jpg)
 
 *提示：这两个堆的合并过程和源码中的测试程序相对应！*
 
@@ -61,44 +61,44 @@ date: 2014-04-08 18:30
 
 合并的结果，相当于将"较大堆"设置"较小堆"的右孩子，如下图所示：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_03.jpg)
 
 
 **第2步**：将上一步得到的"根11的右子树"和"根为12的树"进行合并，得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_04.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_04.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_04.jpg)
 
 
 **第3步**：将上一步得到的"根12的右子树"和"根为13的树"进行合并，得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_05.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_05.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_05.jpg)
 
 
 **第4步**：将上一步得到的"根13的右子树"和"根为16的树"进行合并，得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_06.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_06.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_06.jpg)
 
 
 **第5步**：将上一步得到的"根16的右子树"和"根为23的树"进行合并，得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_07.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_07.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_07.jpg)
 
 
 至此，已经成功的将两棵树合并成为一棵树了。接下来，对新生成的树进行调节。
 
 **第6步**：上一步得到的"树16的右孩子的NPL > 左孩子的NPL"，因此交换左右孩子。得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_08.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_08.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_08.jpg)
 
 
 **第7步**：上一步得到的"树12的右孩子的NPL > 左孩子的NPL"，因此交换左右孩子。得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_09.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_09.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_09.jpg)
 
 
 **第8步**：上一步得到的"树10的右孩子的NPL > 左孩子的NPL"，因此交换左右孩子。得到的结果如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_10.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/leftist/leftist_10.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/leftist/leftist_10.jpg)
 
 
 至此，合并完毕。上面就是合并得到的左倾堆！

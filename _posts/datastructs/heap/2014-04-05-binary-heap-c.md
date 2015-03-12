@@ -32,7 +32,7 @@ date: 2014-04-05 09:11
 > 最小堆：父结点的键值总是小于或等于任何一个子节点的键值。
 
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/erchadui/heap_01.jpg)
 
 <br/>
 二叉堆一般都通过"数组"来实现。数组实现的二叉堆，父节点和子节点的位置存在一定的关系。有时候，我们将"二叉堆的第一个元素"放在数组索引0的位置，有时候放在1的位置。当然，它们的本质一样(都是二叉堆)，知识实现上稍微有一丁点区别。
@@ -43,7 +43,7 @@ date: 2014-04-05 09:11
 > (02) 索引为i的左孩子的索引是 (2\*i+2);  
 > (03) 索引为i的父结点的索引是 floor((i-1)/2)。  
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/erchadui/heap_02.jpg)
 
 
 <br>
@@ -53,7 +53,7 @@ date: 2014-04-05 09:11
 > (02) 索引为i的左孩子的索引是 (2\*i+1);  
 > (03) 索引为i的父结点的索引是 floor(i/2)。  
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/erchadui/heap_03.jpg)
 
 
 **注意：本文二叉堆的实现统统都是采用"二叉堆第一个元素在数组索引为0"的方式！**
@@ -71,7 +71,7 @@ date: 2014-04-05 09:11
 
 假设在最大堆[90,80,70,60,40,30,20,10,50]种添加85，需要执行的步骤如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_04.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_04.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/erchadui/heap_04.jpg)
 
 
 如上图所示，当向最大堆中添加数据时：先将数据加入到最大堆的最后，然后尽可能把这个元素往上挪，直到挪不动为止！
@@ -107,7 +107,7 @@ maxheap_insert(data)的作用：将数据data添加到最大堆中。当堆已�
 
 假设从最大堆[90,85,70,60,80,30,20,10,50,40]中删除90，需要执行的步骤如下：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_05.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_05.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/erchadui/heap_05.jpg)
 
 
 从[90,85,70,60,80,30,20,10,50,40]删除90之后，最大堆变成了[85,80,70,60,40,30,20,10,50]。
@@ -116,7 +116,7 @@ maxheap_insert(data)的作用：将数据data添加到最大堆中。当堆已�
 
 注意：考虑从最大堆[90,85,70,60,80,30,20,10,50,40]中删除70，执行的步骤不能单纯的用它的字节点来替换；而必须考虑到"替换后的树仍然要是最大堆"！
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_06.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/heap/erchadui/heap_06.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/heap/erchadui/heap_06.jpg)
 
 
 **最大堆的删除代码**

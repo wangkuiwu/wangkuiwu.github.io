@@ -67,7 +67,7 @@ date: 2014-04-22 09:12
 
 下面以数列a={30,40,60,10,20,50}为例，演示它的快速排序过程(如下图)。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/quick_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/quick_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/quick_01.jpg)
 
 上图只是给出了第1趟快速排序的流程。在第1趟中，设置x=a[i]，即x=30。
 

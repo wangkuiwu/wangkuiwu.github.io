@@ -29,7 +29,7 @@ date: 2014-04-28 09:44
 
 下面的图片很清晰的反映了"从下往上"和"从上往下"的归并排序的区别。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/merge_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/merge_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/merge_01.jpg)
 
 
 
@@ -98,7 +98,7 @@ date: 2014-04-28 09:44
 
 从上往下的归并排序采用了递归的方式实现。它的原理非常简单，如下图：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/merge_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/merge_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/merge_02.jpg)
 
 通过"从上往下的归并排序"来对数组{80,30,60,40,20,10,50,70}进行排序时：
 
@@ -161,7 +161,7 @@ date: 2014-04-28 09:44
 
 从下往上的归并排序的思想正好与"从下往上的归并排序"相反。如下图：
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/merge_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/merge_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/merge_03.jpg)
 
 通过"从下往上的归并排序"来对数组{80,30,60,40,20,10,50,70}进行排序时：
 

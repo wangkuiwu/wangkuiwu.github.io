@@ -41,11 +41,11 @@ date: 2014-05-11 12:25
 > **3.2.2** 如果m没有依赖顶点，则把m放入Q;   
 *注：顶点A没有依赖顶点，是指不存在以A为终点的边。*
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/topsort/01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/topsort/01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/topsort/01.jpg)
 
 以上图为例，来对拓扑排序进行演示。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/topsort/02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/topsort/02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/topsort/02.jpg)
 
 **第1步**：将B和C加入到排序结果中。  
   &nbsp;&nbsp;&nbsp;&nbsp;顶点B和顶点C都是没有依赖顶点，因此将C和C加入到结果集T中。假设ABCDEFG按顺序存储，因此先访问B，再访问C。访问B之后，去掉边<B,A>和<B,D>，并将A和D加入到队列Q中。同样的，去掉边<C,F>和<C,G>，并将F和G加入到Q中。    

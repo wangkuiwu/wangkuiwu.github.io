@@ -33,12 +33,12 @@ date: 2014-05-13 12:25
 <a name="anchor2"></a>
 # 普里姆算法图解
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/prim/01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/prim/01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/prim/01.jpg)
 
 
 以上图G4为例，来对普里姆进行演示(从第一个顶点A开始通过普里姆算法生成最小生成树)。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/prim/02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/prim/02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/prim/02.jpg)
 
 
 **初始状态**：V是所有顶点的集合，即V={A,B,C,D,E,F,G}；U和T都是空！   

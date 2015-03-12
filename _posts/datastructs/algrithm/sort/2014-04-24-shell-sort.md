@@ -128,7 +128,7 @@ date: 2014-04-24 09:28
 > + 当gap=4时,意味着将数列分为4个组： `{80,20},{30,10},{60,50},{40,70}`。 对应数列： {80,30,60,40,20,10,50,70}
 > + 对这4个组分别进行排序，排序结果： `{20,80},{10,30},{50,60},{40,70}`。 对应数列： {20,10,50,40,80,30,60,70}
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/shell_01.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/shell_01.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/shell_01.jpg)
 
 
 
@@ -139,7 +139,7 @@ date: 2014-04-24 09:28
 > <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {10,40,30,70}实际上有两个有序的数列{10,30}和{40,70}组成。
 > + 对这2个组分别进行排序，排序结果：`{20,50,60,80}, {10,30,40,70}`。 对应数列： {20,10,50,30,60,40,80,70}
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/shell_02.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/shell_02.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/shell_02.jpg)
 
 
 **第3趟**：(gap=1)
@@ -148,7 +148,7 @@ date: 2014-04-24 09:28
 > <br/>注意：{20,10,50,30,60,40,80,70}实际上有两个有序的数列{20,50,60,80}和{10,30,40,70}组成。
 > + 对这1个组分别进行排序，排序结果：`{10,20,30,40,50,60,70,80}`
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/shell_03.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/algrithm/shell_03.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/algrithm/shell_03.jpg)
 
 
 

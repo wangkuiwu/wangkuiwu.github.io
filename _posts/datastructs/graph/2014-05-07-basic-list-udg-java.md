@@ -23,7 +23,7 @@ date: 2014-05-07 18:18
 
 邻接表无向图是指通过邻接表表示的无向图。
 
-<a href="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/06.jpg?raw=true"><img src="https://github.com/wangkuiwu/datastructs_and_algorithm/blob/master/pictures/graph/basic/06.jpg?raw=true" alt="" /></a>
+![img](/media/pic/datastruct_algrithm/graph/basic/06.jpg)
 
 
 上面的图G1包含了"A,B,C,D,E,F,G"共7个顶点，而且包含了"(A,C),(A,D),(A,F),(B,C),(C,D),(E,G),(F,G)"共7条边。
