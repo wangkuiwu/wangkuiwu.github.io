@@ -19,7 +19,7 @@ date: 2013-01-01 00:01
 |              | [栈][link_ds_linear_stack] | [栈][link_ds_linear_stack] | [栈][link_ds_linear_stack] |
 |              | [队列][link_ds_linear_list] | [队列][link_ds_linear_list] | [队列][link_ds_linear_list] |
 |              |  |  |  |
-| **树性结构** | 二叉查找树 | 二叉查找树 | 二叉查找树 |
+| **树性结构** | [二叉查找树][link_ds_tree_bstree_c] | [二叉查找树][link_ds_tree_bstree_cpp] | [二叉查找树][link_ds_tree_bstree_java] |
 |              | AVL树 | AVL树 | AVL树 |
 |              | 伸展树 | 伸展树 | 伸展树 |
 |              | 1. 红黑树(一)之 原理和算法详细介绍 | 1. 红黑树(一)之 原理和算法详细介绍 | 1. 红黑树(一)之 原理和算法详细介绍 |
@@ -61,6 +61,9 @@ date: 2013-01-01 00:01
 [link_ds_linear_stack]:   /2013/01/02/stack
 [link_ds_linear_list]:    /2013/01/03/list
 
+[link_ds_tree_bstree_c]:     /2013/02/01/bstree-c
+[link_ds_tree_bstree_cpp]:   /2013/02/01/bstree-cpp
+[link_ds_tree_bstree_java]:  /2013/02/01/bstree-java
 [link_ds_tree_huffman_c]:    /2013/02/04/huffman-c
 [link_ds_tree_huffman_cpp]:  /2013/02/04/huffman-cpp
 [link_ds_tree_huffman_java]: /2013/02/04/huffman-java
