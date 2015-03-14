@@ -4,7 +4,7 @@ title: "java io系列06之 序列化(Serializable和Externalizable)详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-05 09:01
+date: 2012-05-06 09:01
 ---
  
 

@@ -4,7 +4,7 @@ title: "java io系列13之 BufferedOutputStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-12 09:01
+date: 2012-05-13 09:01
 ---
 
 > **目录**  

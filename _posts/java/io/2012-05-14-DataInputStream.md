@@ -4,7 +4,7 @@ title: "java io系列14之 DataInputStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-13 09:01
+date: 2012-05-14 09:01
 ---
 
 > 本章介绍DataInputStream。我们先对DataInputStream有个大致认识，然后再深入学习它的源码，最后通过示例加深对它的了解。

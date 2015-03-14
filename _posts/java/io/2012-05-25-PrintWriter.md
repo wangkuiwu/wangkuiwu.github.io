@@ -4,7 +4,7 @@ title: "java io系列25之 PrintWriter详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-24 09:01
+date: 2012-05-25 09:01
 ---
 
 > **目录**  

@@ -4,7 +4,7 @@ title: "java io系列16之 PrintStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-15 09:01
+date: 2012-05-16 09:01
 ---
 
 > 本章介绍PrintStream以及 它与DataOutputStream的区别。我们先对PrintStream有个大致认识，然后再深入学习它的源码，最后通过示例加深对它的了解。

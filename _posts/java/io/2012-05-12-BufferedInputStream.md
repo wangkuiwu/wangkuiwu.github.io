@@ -4,7 +4,7 @@ title: "java io系列12之 BufferedInputStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-11 09:01
+date: 2012-05-12 09:01
 ---
 
 > **目录**  

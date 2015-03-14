@@ -4,7 +4,7 @@ title: "java io系列26之 RandomAccessFile详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-25 09:01
+date: 2012-05-26 09:01
 ---
 
 > **目录**  

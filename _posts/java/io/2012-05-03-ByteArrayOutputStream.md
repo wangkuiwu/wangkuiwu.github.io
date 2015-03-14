@@ -4,7 +4,7 @@ title: "java io系列03之 ByteArrayOutputStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-02 09:01
+date: 2012-05-03 09:01
 ---
 
 > 前面学习ByteArrayInputStream，了解了“输入流”。接下来，我们学习与ByteArrayInputStream相对应的输出流，即ByteArrayOutputStream。  

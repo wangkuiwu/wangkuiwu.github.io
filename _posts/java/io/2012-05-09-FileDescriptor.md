@@ -4,7 +4,7 @@ title: "java io系列09之 FileDescriptor详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-08 09:01
+date: 2012-05-09 09:01
 ---
 
 > 本章对FileDescriptor进行介绍

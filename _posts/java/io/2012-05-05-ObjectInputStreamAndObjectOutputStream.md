@@ -4,7 +4,7 @@ title: "java io系列05之 ObjectInputStream和ObjectOutputStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-04 09:01
+date: 2012-05-05 09:01
 ---
 
 > 本章，我们学习ObjectInputStream 和 ObjectOutputStream

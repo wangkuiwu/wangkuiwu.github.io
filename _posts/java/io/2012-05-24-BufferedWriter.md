@@ -4,7 +4,7 @@ title: "java io系列24之 BufferedWriter详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-23 09:01
+date: 2012-05-24 09:01
 ---
 
 > **目录**  

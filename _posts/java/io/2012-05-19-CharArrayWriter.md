@@ -4,7 +4,7 @@ title: "java io系列19之 CharArrayWriter详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-18 09:01
+date: 2012-05-19 09:01
 ---
 
 > 本章，我们学习CharArrayWriter。学习时，我们先对CharArrayWriter有个大致了解，然后深入了解一下它的源码，最后通过示例来掌握它的用法。
