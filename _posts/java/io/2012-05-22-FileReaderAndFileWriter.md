@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列21之 FileReader和FileWriter详解"
+title: "java io系列22之 FileReader和FileWriter详解"
 description: "java io"
 category: java
 tags: [java]

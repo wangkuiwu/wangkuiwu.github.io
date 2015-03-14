@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列03之 管道(PipedOutputStream和PipedInputStream)详解"
+title: "java io系列04之 管道(PipedOutputStream和PipedInputStream)详解"
 description: "java io"
 category: java
 tags: [java]

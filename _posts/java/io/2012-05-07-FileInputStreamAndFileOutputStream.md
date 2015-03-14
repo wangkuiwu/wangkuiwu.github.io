@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列06之 FileInputStream和FileOutputStream详解"
+title: "java io系列07之 FileInputStream和FileOutputStream详解"
 description: "java io"
 category: java
 tags: [java]

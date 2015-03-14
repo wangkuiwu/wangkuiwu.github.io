@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列10之 FilterOutputStream详解"
+title: "java io系列11之 FilterOutputStream详解"
 description: "java io"
 category: java
 tags: [java]

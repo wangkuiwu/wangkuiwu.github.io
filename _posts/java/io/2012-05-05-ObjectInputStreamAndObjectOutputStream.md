@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列04之 ObjectInputStream和ObjectOutputStream详解"
+title: "java io系列05之 ObjectInputStream和ObjectOutputStream详解"
 description: "java io"
 category: java
 tags: [java]

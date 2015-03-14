@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列16之 System.out.println详解"
+title: "java io系列17之 System.out.println详解"
 description: "java io"
 category: java
 tags: [java]

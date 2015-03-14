@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列17之 CharArrayReader详解"
+title: "java io系列18之 CharArrayReader详解"
 description: "java io"
 category: java
 tags: [java]

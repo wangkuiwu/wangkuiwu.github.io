@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列22之 BufferedReader详解"
+title: "java io系列23之 BufferedReader详解"
 description: "java io"
 category: java
 tags: [java]

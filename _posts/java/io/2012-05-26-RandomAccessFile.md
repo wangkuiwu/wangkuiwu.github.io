@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列25之 RandomAccessFile详解"
+title: "java io系列26之 RandomAccessFile详解"
 description: "java io"
 category: java
 tags: [java]

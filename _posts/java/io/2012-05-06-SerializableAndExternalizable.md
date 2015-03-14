@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列05之 序列化(Serializable和Externalizable)详解"
+title: "java io系列06之 序列化(Serializable和Externalizable)详解"
 description: "java io"
 category: java
 tags: [java]

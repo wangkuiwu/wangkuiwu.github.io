@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列24之 PrintWriter详解"
+title: "java io系列25之 PrintWriter详解"
 description: "java io"
 category: java
 tags: [java]

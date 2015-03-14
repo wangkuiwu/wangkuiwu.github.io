@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列15之 PrintStream详解"
+title: "java io系列16之 PrintStream详解"
 description: "java io"
 category: java
 tags: [java]

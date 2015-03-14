@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列19之 PipedReader和PipedWriter详解"
+title: "java io系列20之 PipedReader和PipedWriter详解"
 description: "java io"
 category: java
 tags: [java]

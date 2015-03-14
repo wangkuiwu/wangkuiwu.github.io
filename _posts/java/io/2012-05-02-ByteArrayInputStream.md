@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列01之 ByteArrayInputStream详解"
+title: "java io系列02之 ByteArrayInputStream详解"
 description: "java io"
 category: java
 tags: [java]

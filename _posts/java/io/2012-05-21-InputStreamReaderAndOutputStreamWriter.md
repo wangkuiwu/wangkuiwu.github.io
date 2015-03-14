@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列20之 InputStreamReader和OutputStreamWriter详解"
+title: "java io系列21之 InputStreamReader和OutputStreamWriter详解"
 description: "java io"
 category: java
 tags: [java]

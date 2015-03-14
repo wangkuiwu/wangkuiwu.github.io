@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列12之 BufferedOutputStream详解"
+title: "java io系列13之 BufferedOutputStream详解"
 description: "java io"
 category: java
 tags: [java]

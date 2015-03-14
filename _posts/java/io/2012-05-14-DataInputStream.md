@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "java io系列13之 DataInputStream详解"
+title: "java io系列14之 DataInputStream详解"
 description: "java io"
 category: java
 tags: [java]
