@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "Android API指南(二)控件篇04之 RadioButton"
+title: "Android控件篇05之 RadioButton"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-09 09:11
+date: 2014-02-05 09:11
 ---
 
 
@@ -12,9 +12,9 @@ date: 2014-06-09 09:11
 
 
 <a name="anchor1"></a>
-# RadioButton基本使用
+# 1. RadioButton基本使用
 
-## 1. RadioButton的父类
+## 1.1 RadioButton的父类
 
 下面是RadioButton的继承关系图
 
@@ -28,7 +28,7 @@ date: 2014-06-09 09:11
 从中，可以看出Button和CompoundButton都是RadioButton父类。这也就意味着，RadioButton同时具有它们的特性。
 
 
-## 2. RadioButton基本定义
+## 1.2 RadioButton基本定义
 
 
     <RadioGroup
@@ -59,7 +59,7 @@ date: 2014-06-09 09:11
 
 
 
-## 3. RadioButton事件的监听
+## 1.3 RadioButton事件的监听
 
 RadioButton事件的监听，有两种方法：
 

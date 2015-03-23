@@ -4,15 +4,22 @@ title: "Android培训(一)开始篇02之 添加ActionBar"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-05-26 19:11
+date: 2014-01-02 09:01
 ---
 
 
 > 本文Android3.0及以上版本中ActionBar的基本使用方法。
 
+> **目录**  
+[1. ActionBar说明](#anchor1)  
+[2. ActionBar中添加按钮](#anchor2)  
+[3. ActionBar状态设置](#anchor3)  
+[4. 覆盖ActionBar](#anchor4)  
 
 
-# ActionBar说明
+
+<a name="anchor1"></a>
+# 1. ActionBar说明
 
 
 在Android3.0(**API level 11**)及以上版本，可以通过在manifest中使用主题"**[Theme.Holo][link_google_theme] 及 它的其它相关主题**"来添加ActionBar。
@@ -29,12 +36,13 @@ date: 2014-05-26 19:11
 
 
 
-# ActionBar中添加按钮
+<a name="anchor2"></a>
+# 2. ActionBar中添加按钮
 
 
 点击查看：[示例工程][link_actionbar_project01]
 
-## 1.添加方式
+## 2.1 添加方式
 
 **第一步**：通过添加xml文件来指令ActionBar中的按钮。例如，添加`res/menu/main_activity_actions.xml`，内容如下：
 
@@ -71,7 +79,7 @@ android:showAsAction=["ifRoom" \| "never" \| "withText" \| "always" \| "collapse
 
 
 
-## 2. 响应按钮
+## 2.2 响应按钮
 
 覆盖onOptionsItemSelected()方法，从而对相应的ActionBar按钮做出响应。
 
@@ -96,11 +104,12 @@ android:showAsAction=["ifRoom" \| "never" \| "withText" \| "always" \| "collapse
 
 
 
-# ActionBar状态设置
+<a name="anchor3"></a>
+# 3. ActionBar状态设置
 
 点击查看：[示例工程][link_actionbar_project02]
 
-## 1. 使用主题
+## 3.1 使用主题
 
 可以使用不同的ActionBar主题：
 
@@ -110,7 +119,7 @@ Theme.Holo.Light.DarkActionBar: ActionBar是黑色，Body是浅色。
 
 
 
-## 2. 自定义主题 
+## 3.2 自定义主题 
 
 可以自定义主题，并在主题中指明ActionBar的各个属性。
 
@@ -154,7 +163,8 @@ Theme.Holo.Light.DarkActionBar: ActionBar是黑色，Body是浅色。
 
 
 
-# 覆盖ActionBar
+<a name="anchor4"></a>
+# 4. 覆盖ActionBar
 
 点击查看：[示例工程][link_actionbar_project03]
 

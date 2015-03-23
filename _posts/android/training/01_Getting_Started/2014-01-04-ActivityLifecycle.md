@@ -4,24 +4,24 @@ title: "Android培训(一)开始篇04之 Activity的生命周期"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-05-29 09:25
+date: 2014-01-04 09:25
 ---
 
-> 本章Activity的生命周期。
+> 本章介绍Activity的生命周期。
 
 > **目录**  
-> **1**. [Activity生命周期图](#anchor1)  
-> **2**. [Activity生命周期实例解说](#anchor2)  
-> **3**. [Acitivty回掉函数说明](#anchor3)  
-> **4**. [onSaveInstanceState和onRestoreInstanceState](#anchor4)  
+[1. Activity生命周期图](#anchor1)  
+[2. Activity生命周期实例解说](#anchor2)  
+[3. Acitivty回掉函数说明](#anchor3)  
+[4. onSaveInstanceState和onRestoreInstanceState](#anchor4)  
 
 
 <a name="anchor1"></a>
-# Activity生命周期图
+# 1. Activity生命周期图
 
 Activity的生命周期图如下：
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/training/01_getting_started/04_activity_lifecycle/01_basic_cycle/pic/basic-lifecycle.png"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/training/01_getting_started/04_activity_lifecycle/01_basic_cycle/pic/basic-lifecycle.png" alt="" /></a>
+![img](/media/pic/android/training/lifecycle01.png)
 
 说明：在Activity存在期间，只有三个可持久状态，其它的都是暂态。这三个可持久状态分别是：Resumed，Paused和Stopped。
 
@@ -32,7 +32,7 @@ Activity的生命周期图如下：
 
 
 <a name="anchor2"></a>
-# Activity生命周期实例解说
+# 2. Activity生命周期实例解说
 
 ## 示例1--基本生命周期
 
@@ -165,16 +165,16 @@ onCreate() --> onDestroy()
 
 
 <a name="anchor3"></a>
-# Acitivty回掉函数说明
+# 3. Acitivty回掉函数说明
 
-## 1. onCreate()
+## 3.1 onCreate()
 
 触发条件：onCreate()是打开Activity第一个被毁掉的函数。
 
 常见动作：通常在onCreate()中进行初始化以及显示准备。
 
 
-## 2. onDestroy()
+## 3.2 onDestroy()
 
 触发条件：当该Activity被销毁时，onDestroy()会被回调。例如，通过返回键退该Acitivty；或者，当Activity在Stopped状态下，由于资源紧张，系统主动销毁掉该Activity。
 
@@ -183,7 +183,7 @@ onCreate() --> onDestroy()
 注意：onDestroy()被调用有两种情况：一种是Activity在Stopped状态被销毁；另一种是在非Stopped状态调用finish()来主动销毁该Activity。
 
 
-## 3. onStart()
+## 3.3 onStart()
 
 触发条件：通常在onCreate()执行完之后被调用。onStart()被调用时，Activity已经是可见的。
 
@@ -191,7 +191,7 @@ onCreate() --> onDestroy()
 
 
 
-## 4. onResume()
+## 3.4 onResume()
 
 触发条件：在onStart()执行完之后被调用。onResume()被调用时，用户可以获取当前Activity的焦点。
 
@@ -202,7 +202,7 @@ onCreate() --> onDestroy()
 
 
 
-## 5. onPause
+## 3.5 onPause
 
 触发条件：当Activity从Resumed状态变为Paused状态时被调用。
 
@@ -213,7 +213,7 @@ onCreate() --> onDestroy()
 
 
 
-## 6. onStop
+## 3.6 onStop
 
 触发条件：当Activity从Paused状态变为Stopped状态时被调用。  
 常见的情况有：  
@@ -227,7 +227,7 @@ onCreate() --> onDestroy()
 
 
 
-## 7. onRestart()
+## 3.7 onRestart()
 
 触发条件：当Activity在Stopped状态再次被显示到前端时被调用。
 
@@ -239,7 +239,7 @@ onCreate() --> onDestroy()
 
 
 <a name="anchor4"></a>
-# onSaveInstanceState和onRestoreInstanceState
+# 4. onSaveInstanceState和onRestoreInstanceState
 
 onSaveInstanceState()是用于保存数据，onRestoreInstanceState()用于还原数据。
 

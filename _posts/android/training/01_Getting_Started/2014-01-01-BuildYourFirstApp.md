@@ -4,22 +4,22 @@ title: "Android培训(一)开始篇01之 创建第一个程序"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-05-26 09:25
+date: 2014-01-01 09:01
 ---
 
 > 本章以ubuntu系统位前提，先介绍ubuntu中Java和Android开发环境的搭建方法；然后，再说明如何通过ant来调试Android工程。
 
 > **目录**  
-> **1**. [搭建Java环境](#anchor1)  
-> **2**. [搭建Android环境](#anchor2)  
-> **3**. [使用Ant调试Android工程](#anchor3)  
+[1. 搭建Java环境](#anchor1)  
+[2. 搭建Android环境](#anchor2)  
+[3. 使用Ant调试Android工程](#anchor3)  
 
 
 
 
 
 <a name="anchor1"></a>
-# 搭建Java开发环境
+# 1. 搭建Java开发环境
 
 这里介绍"**ubuntu系统**"下安装Java开发环境的方式。
 
@@ -71,7 +71,7 @@ date: 2014-05-26 09:25
 
 
 <a name="anchor2"></a>
-# 搭建Android开发环境
+# 2. 搭建Android开发环境
 
 前面搭建好Java开发环境之后，接下来搭建Android开发环境。
 
@@ -150,7 +150,7 @@ date: 2014-05-26 09:25
 
 
 <a name="anchor3"></a>
-# 使用Ant调试Android工程
+# 3. 使用Ant调试Android工程
 
 下面介绍使用Ant编译/调试APK的方法
 

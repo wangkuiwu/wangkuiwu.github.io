@@ -4,19 +4,19 @@ title: "Android培训(一)开始篇03之 APK支持不同的设备"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-05-27 09:25
+date: 2014-01-03 09:25
 ---
 
 > 本章介绍在开发APK中，支持多种设备需要考虑的几个方面。主要包括：多语言，多分辨率和多Android版本。
 
 > **目录**  
-> **1**. [多语言支持](#anchor1)  
-> **2**. [不同分辨率](#anchor2)  
-> **3**. [不同Android版本](#anchor3)  
+[1. 多语言](#anchor1)  
+[2. 多分辨率](#anchor2)  
+[3. 多Android版本](#anchor3)  
 
 
 <a name="anchor1"></a>
-# 多语言支持
+# 1. 多语言
 
 Android支持多语言。在APK提供多语言支持时，只需要定义不同语言对应的资源；然后放到相应目录即可。
 
@@ -32,12 +32,12 @@ Android支持多语言。在APK提供多语言支持时，只需要定义不同�
 
 
 <a name="anchor2"></a>
-# 不同分辨率
+# 2. 多分辨率
 
 Android支持多分辨率。在APK提供多分辨率支持时，也只需要定义对应分辨率的资源；然后放到相应目录即可。
 
 
-## 1. 分辨率常识
+## 2.1 分辨率常识
 
 android中通过"大小(size)"和"密度(density)"来决定资源的大小。
 
@@ -56,7 +56,7 @@ android包含4种基本的大小：**samll, normal, large, xlarge**。
 
 
 
-## 2. 资源布局
+## 2.2 资源布局
 
 将对应的资源文件放在"<screen_size>"为后缀的目录下，android设备会根据它自身的大小来决定使用哪种资源。
 
@@ -93,7 +93,7 @@ android包含4种基本的大小：**samll, normal, large, xlarge**。
 
 
 <a name="anchor3"></a>
-# 不同Android版本
+# 3. 多Android版本
 
 Android有许多不同版本。有些Android功能，在有些版本才添加；因此apk需要对此进行相应的处理：可以指定apk支持的最低版本的Android。
 

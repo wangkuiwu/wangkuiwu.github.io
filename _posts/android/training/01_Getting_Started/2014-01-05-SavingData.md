@@ -1,22 +1,22 @@
 ---
 layout: post
-title: "Android培训(一)开始篇06之 保存数据"
+title: "Android培训(一)开始篇05之 保存数据"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-05-30 19:25
+date: 2014-01-05 19:25
 ---
 
-> 本章Fragment
+> 本章介绍Android中常用的保存数据的几种基本方法。
 
 > **目录**  
-> **1**. [SharedPreferences保存数据](#anchor1)  
-> **2**. [File保存数据](#anchor2)  
-> **3**. [SQLite保存数据](#anchor3)  
+[第1部分 SharedPreferences保存数据](#anchor1)  
+[第2部分 File保存数据](#anchor2)  
+[第3部分 SQLite保存数据](#anchor3)  
 
 
 <a name="anchor1"></a>
-# SharedPreferences保存数据
+# 第1部分 SharedPreferences保存数据
 
 ## 1. 基本用法
 
@@ -67,7 +67,7 @@ date: 2014-05-30 19:25
 
 
 <a name="anchor2"></a>
-# File保存数据
+# 第2部分 File保存数据
 
 将数据存储成文件，并保存到设备上。可以选择Exernal(外部) 和 Internal(内部)存储设别。
 
@@ -107,7 +107,7 @@ date: 2014-05-30 19:25
 
 
 <a name="anchor3"></a>
-# SQLite保存数据
+# 第3部分 SQLite保存数据
 
 ## 1. 数据库设计建议
 

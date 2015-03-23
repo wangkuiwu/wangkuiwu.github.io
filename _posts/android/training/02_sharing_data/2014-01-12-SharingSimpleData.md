@@ -4,19 +4,19 @@ title: "Android培训(二)共享篇02之 共享文件"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-04 09:25
+date: 2014-01-12 09:25
 ---
 
 > 本章介绍如何通过FileProvider来共享文件。该文件是对应"[FileProvider测试源码](https://github.com/wangkuiwu/android_applets/tree/master/training/02_sharing_data/02_share_file/ShareFile)"进行的说明
 
 > **目录**  
-> **1**. [设置文件共享的配置](#anchor1)  
-> **2**. [提供文件共享的选择界面](#anchor2)  
-> **3**. [发送请求并处理返回结果](#anchor3)  
+[第1部分 设置文件共享的配置](#anchor1)  
+[第2部分 提供文件共享的选择界面](#anchor2)  
+[第3部分 发送请求并处理返回结果](#anchor3)  
 
 
 <a name="anchor1"></a>
-# 设置文件共享的配置
+# 第1部分 设置文件共享的配置
 
 Android提供了FileProvider来提供不同程序之间的文件共享。下面就说说如何通过FileProvider来实现不同程序之间的文件共享。
 
@@ -58,7 +58,7 @@ res/xml/filepaths.xml的内容如下：
 
 
 <a name="anchor2"></a>
-# 提供文件共享的选择界面
+# 第2部分 提供文件共享的选择界面
 
 经过上面的设置之后，程序就能提供文件共享功能。通常，会对应的提供文件共享的选择界面给用户，方便他们做出选择。下面介绍选择界面的实现方法。
 
@@ -143,7 +143,7 @@ res/xml/filepaths.xml的内容如下：
 
 
 <a name="anchor3"></a>
-# 发送请求并处理返回结果
+# 第3部分 发送请求并处理返回结果
 
 前面介绍了如何共享文件，提供共享文件选择界面，以及将选择结果返回给客户。这里，将介绍如何请求获取共享文件，以及收到请求结果之后的处理方法。
 

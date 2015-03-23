@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "Android API指南(二)控件篇05之 ToggleButton"
+title: "Android控件篇06之 ToggleButton"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-10 09:11
+date: 2014-02-06 09:11
 ---
 
 
@@ -12,9 +12,9 @@ date: 2014-06-10 09:11
 
 
 <a name="anchor1"></a>
-# ToggleButton基本使用
+# 1. ToggleButton基本使用
 
-## 1. ToggleButton的父类
+## 1.1 ToggleButton的父类
 
 下面是ToggleButton的继承关系图
 
@@ -28,7 +28,7 @@ date: 2014-06-10 09:11
 从中，可以看出Button和CompoundButton都是ToggleButton父类。这也就意味着，ToggleButton同时具有它们的特性。
 
 
-## 2. ToggleButton基本定义
+## 1.2 ToggleButton基本定义
 
 
     <ToggleButton 
@@ -54,7 +54,7 @@ date: 2014-06-10 09:11
         />
 
 
-## 3. ToggleButton事件的监听
+## 1.3 ToggleButton事件的监听
 
 ToggleButton事件的监听，有两种方法：
 

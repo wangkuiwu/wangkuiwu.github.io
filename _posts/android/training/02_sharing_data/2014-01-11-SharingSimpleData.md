@@ -4,25 +4,25 @@ title: "Android培训(二)共享篇01之 共享简单数据"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-03 09:25
+date: 2014-01-11 09:25
 ---
 
 > 本章介绍如何通过Intent来共享简单数据
 
 > **目录**  
-> **1**. [共享数据简介](#anchor1)  
-> **2**. [ActionBar共享支持](#anchor2)  
+[1. 共享数据简介](#anchor1)  
+[2. ActionBar共享支持](#anchor2)  
 
 
 <a name="anchor1"></a>
-# 共享数据简介
+# 1. 共享数据简介
 
 通过Intent共享数据，主要涉及到的几个方面：发送数据、接收数据、发送/返回结果。这些内容在介绍[App的交互类Intent](/2014/05/31/Intent)时，已经介绍过了，这里就不再重复说明！
 
 
 
 <a name="anchor2"></a>
-# ActionBar共享支持
+# 2. ActionBar共享支持
 
 如果你想在ActionBar中添加"分享"功能。有个很简单的方法：Android默认提供了对该功能的支持。
 
