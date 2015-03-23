@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "java io系列01之 ByteArrayInputStream详解"
+title: "java io系列02之 ByteArrayInputStream详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-01 09:01
+date: 2012-05-02 09:01
 ---
 
 > 我们以ByteArrayInputStream，拉开对字节类型的“输入流”的学习序幕。  

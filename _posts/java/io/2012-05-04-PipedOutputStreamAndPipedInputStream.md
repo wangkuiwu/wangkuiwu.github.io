@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "java io系列03之 管道(PipedOutputStream和PipedInputStream)详解"
+title: "java io系列04之 管道(PipedOutputStream和PipedInputStream)详解"
 description: "java io"
 category: java
 tags: [java]
-date: 2012-05-03 09:01
+date: 2012-05-04 09:01
 ---
 
 > 本章，我们对java 管道进行学习。
