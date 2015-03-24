@@ -7,11 +7,6 @@ tags: [linux]
 date: 2011-07-03 09:01
 ---
 
-> **目录**  
-> [](#anchor1)   
-> [](#anchor2)   
-
-
 <a name="anchor1"></a>
 # 1. apt-get安装常用软件
 
@@ -19,7 +14,7 @@ date: 2011-07-03 09:01
 
     $ sudo apt-get install vim
 
-**(02) 安装git**：git是最棒的版本管理工具。
+**(02) 安装git**：git是最棒的版本管理工具，没有之一！
 
     $ sudo apt-get git
 
@@ -111,21 +106,7 @@ ubuntu中比较常用的输入法有ibus和fcitx。两种输入法，择其一�
 
 
 <a name="anchor3_2"></a>
-## 3.2 安装BC
-
-下面介绍安装beyond compare的步骤。
-
-**TODO**
-
-beyond compare key:
-
-    HmB5oANygQOhaStTHNa+zOKgOeWHOkeAp6d1+QwIebz6z9kwYCm9-O0jF9F79zvzed9v5UVC4VrDkDMmTM8nB+
-
- 
-
-
-<a name="anchor3_3"></a>
-## 3.3 安装VirtualBox虚拟机
+## 3.2 安装VirtualBox虚拟机
 
 下面介绍ubuntu中安装VirtualBox虚拟机，并在虚拟机中安装Win 7操作系统的步骤。
 
@@ -133,10 +114,12 @@ beyond compare key:
 
 参考网址：[https://www.virtualbox.org/wiki/Linux_Downloads](https://www.virtualbox.org/wiki/Linux_Downloads)
 
- 2. 下载win7 32bit镜像
+**第2步： 下载win7 32bit镜像**
 
 百度网盘上。[点击下载](http://pan.baidu.com/s/1jGgkrRK)，密码：tc3x
 
+**第3步： 安装VirtualBox**
 
+**第4步： 在VirtualBox中安装win7镜像**
 
 

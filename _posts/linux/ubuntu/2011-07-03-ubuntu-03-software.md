@@ -10,6 +10,7 @@ date: 2011-07-03 09:03
 > **目录**  
 > [1. 安装minicom](#anchor1)   
 > [2. 配置minicom](#anchor2)   
+> [3. minicom常用功能](#anchor3)   
 
 
 <a name="anchor1"></a>
