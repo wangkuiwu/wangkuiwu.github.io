@@ -1,16 +1,14 @@
 ---
 layout: post
-title: "Linux学习基础篇03 ubuntu软件(二) Jdk和Android IDE"
+title: "Linux学习基础篇03 ubuntu软件(二) JDK"
 description: "linux ubuntu"
 category: linux
 tags: [linux]
 date: 2011-07-03 09:02
 ---
 
-> 本文介绍java jdk和Android开发环境的搭建方式
+> 本文介绍java jdk环境的搭建方式
 
-
-# 1. JDK环境
 
 **1.1 下载JDK**
 
@@ -50,16 +48,4 @@ date: 2011-07-03 09:02
     $ java -version
 
 如果该指令能正确的输出jdk版本，则表示JDK配置成功。
-
-
-# 2. Android环境
-
-到[Google官网](http://developer.android.com/sdk/index.html)或者[国内的Android SDK网站](http://mirrors.neusoft.edu.cn/android/repository/)去下载Android SDK。
-
-
-**2.1 安装SDK**
-
-下载，安装SDK
-
-
 
