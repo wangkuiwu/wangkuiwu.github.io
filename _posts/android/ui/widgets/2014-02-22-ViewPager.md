@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "Android API指南(二)控件篇09之 ViewPager"
+title: "Android控件篇22之 ViewPager"
 description: "android training"
 category: android
 tags: [android]
-date: 2014-06-12 09:13
+date: 2014-02-22 09:13
 ---
 
 
@@ -12,7 +12,7 @@ date: 2014-06-12 09:13
 
 
 <a name="anchor1"></a>
-# ViewPager的简介
+# 1. ViewPager的简介
 
 ViewPager是ViewGroup的子类。和其他ViewGroup一样，ViewPager中能容纳多个View。此外，ViewPager的特点：  
 (01) 每次只能显示一个View。  
@@ -24,16 +24,15 @@ ViewPager是ViewGroup的子类。和其他ViewGroup一样，ViewPager中能容�
 
 
 
-<a name="anchor1"></a>
-
-# ViewPager示例一
+<a name="anchor2"></a>
+# 2. ViewPager示例一
 
 该示例将演示ViewPager的最基本的用法。示例中会创建一个Activity，该Activity的布局中包含一个ViewPager；我们将三个xml布局通过LayoutInflater解析得到View，然后再将这些View添加到该ViewPager对应的PageAdapter中，从而达到使这三个布局能够通过ViewPager相互切换的目的。
 
 点击查看：[ViewPager示例一的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/viewpager/01_basic/ViewPageTest)
 
 
-## 1. 默认Activity的布局
+## 2.1 默认Activity的布局
 
 默认的Activity的布局文件res/layout/main.xml的内容如下：
 
@@ -56,7 +55,7 @@ ViewPager是ViewGroup的子类。和其他ViewGroup一样，ViewPager中能容�
 
 
 
-## 2. 默认Activity的代码
+## 2.2 默认Activity的代码
 
     public class ViewPageTest extends Activity {
         /** Called when the activity is first created. */
@@ -113,7 +112,7 @@ res/layout/page_one.xml的内容如下：
 
 
 
-## 3. 自定义PageAdapter
+## 2.3 自定义PageAdapter
 
 在自定义PageAdapter时，一定要实现getCount()和isViewFromObject(view, object)这两个方法。
 
@@ -155,13 +154,13 @@ res/layout/page_one.xml的内容如下：
 
 
 <a name="anchor3"></a>
-# ViewPager示例二
+# 3. ViewPager示例二
 
 前面的ViewPage中的每一个View都是直接使用的layout布局文件。本示例将演示使用Fragment。
 
 点击查看：[ViewPager示例二的源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/ui/viewpager/02_fragment_viewpager/ViewPageTest)
 
-## 1. 默认Activity的布局
+## 3.1 默认Activity的布局
 
 
     <?xml version="1.0" encoding="utf-8"?>
@@ -182,7 +181,7 @@ res/layout/page_one.xml的内容如下：
 
 
 
-## 2. 默认Activity的代码
+## 3.2 默认Activity的代码
 
 
     public class ViewPageTest extends FragmentActivity {
@@ -218,7 +217,7 @@ res/layout/page_one.xml的内容如下：
 说明：本示例中添加到PagerAdapter的视图都是Fragment对象。**这是本示例与"示例一"的本质区别**！
 
 
-## 3. 自定义的Fragment
+## 3.3 自定义的Fragment
 
     public class MyFragment extends Fragment {
 
@@ -265,7 +264,7 @@ MyFragment的布局文件myfragment.xml内容如下：
     </LinearLayout>
 
 
-## 4. 自定义PageAdapter
+## 3.4 自定义PageAdapter
 
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
@@ -287,7 +286,6 @@ MyFragment的布局文件myfragment.xml内容如下：
     }
 
 说明：本例中MyPagerAdapter的父类是FragmentPagerAdapter，而不是PageAdapter！
-
 
 
 
