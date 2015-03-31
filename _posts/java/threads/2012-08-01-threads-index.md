@@ -53,6 +53,7 @@ date: 2012-08-01 00:01
 [Java多线程系列--“JUC线程池”03之 线程池原理(二)][link_java_juc_executor03]  
 [Java多线程系列--“JUC线程池”04之 线程池原理(三)][link_java_juc_executor04]  
 [Java多线程系列--“JUC线程池”05之 线程池原理(四)][link_java_juc_executor05]
+[Java多线程系列--“JUC线程池”06之 Callable和Future][link_java_juc_executor06]
 
 
 
@@ -99,4 +100,5 @@ date: 2012-08-01 00:01
 [link_java_juc_executor03]: /2012/08/15/juc-executor03
 [link_java_juc_executor04]: /2012/08/15/juc-executor04
 [link_java_juc_executor05]: /2012/08/15/juc-executor05
+[link_java_juc_executor06]: /2012/08/15/juc-executor06
 
