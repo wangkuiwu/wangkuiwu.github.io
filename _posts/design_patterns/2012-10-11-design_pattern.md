@@ -2,8 +2,8 @@
 layout: post
 title: "设计模式01之 简单工厂模式(创建模式)"
 description: "java"
-category: java
-tags: [java]
+category: pattern
+tags: [java, pattern]
 date: 2012-10-11 09:01
 ---
 

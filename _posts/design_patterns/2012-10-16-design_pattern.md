@@ -2,8 +2,8 @@
 layout: post
 title: "设计模式06之 建造模式(创建模式)"
 description: "java"
-category: java
-tags: [java]
+category: pattern
+tags: [java, pattern]
 date: 2012-10-16 09:01
 ---
  

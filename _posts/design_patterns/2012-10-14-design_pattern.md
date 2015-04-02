@@ -2,8 +2,8 @@
 layout: post
 title: "设计模式04之 单例模式(创建模式)"
 description: "java"
-category: java
-tags: [java]
+category: pattern
+tags: [java, pattern]
 date: 2012-10-14 09:01
 ---
  
