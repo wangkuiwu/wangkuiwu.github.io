@@ -7,11 +7,13 @@ tags: [android]
 date: 2015-05-02 09:02
 ---
 
-> 在Android上发送HTTP请求的方式一般有2种：HttpCient 和 HttpURLConnection。本文我们就来学习HttpCient。
+> 在Android上发送HTTP请求的方式一般有2种：httpClient 和 HttpURLConnection。本文我们就来学习httpClient。
 
 > **目录**  
 [1. HttpClient概述](#anchor1)  
-[2. ](#anchor2)  
+[2. HttpClient框架](#anchor2)  
+[3. DefaultHttpClient示例](#anchor3)  
+[4. AndroidHttpClient示例](#anchor4)  
 
 
 <a name="anchor1"></a>
@@ -58,11 +60,18 @@ HttpClient其实是一个接口类型，它封装了对象需要执行的Http请
 
 
 
+<a name="anchor2"></a>
+# 2. HttpClient框架
+
+httpClient框架图如下：[TODO]
+
 
 <a name="anchor3"></a>
 # 3. DefaultHttpClient示例
 
-点击下载：[示例源码]()
+示例说明：点击按钮，通过DefaultHttpClient发送HttpGet请求给百度(http://www.baidu.com)，并显示返回结果。
+
+点击下载：[示例源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/networks/http/HttpClient/demo)
 
 layout文件(activity_main.xml)源码
 
@@ -169,13 +178,13 @@ Demo1.java的代码
                 public void run() {
                     //用HttpClient发送请求，分为五步
                     //第一步：创建HttpClient对象
-                    HttpClient httpCient = new DefaultHttpClient();
+                    HttpClient httpClient = new DefaultHttpClient();
                     //第二步：创建代表请求的对象,参数是访问的服务器地址
                     HttpGet httpGet = new HttpGet("http://www.baidu.com");
                     
                     try {
                         //第三步：执行请求，获取服务器返还的相应对象
-                        HttpResponse httpResponse = httpCient.execute(httpGet);
+                        HttpResponse httpResponse = httpClient.execute(httpGet);
                         //第四步：检查相应的状态是否正常：检查状态码的值是200表示正常
                         if (httpResponse.getStatusLine().getStatusCode() == 200) {
                             //第五步：从相应对象当中取出数据，放到entity当中
@@ -201,3 +210,20 @@ Demo1.java的代码
 在manifest中添加网络权限
 
     <uses-permission android:name="android.permission.INTERNET"/>
+
+
+<a name="anchor4"></a>
+# 4. AndroidHttpClient示例
+
+示例说明：点击按钮，通过DefaultHttpClient发送HttpGet请求给百度(http://www.baidu.com)，并显示返回结果。
+
+点击下载：[示例源码](https://github.com/wangkuiwu/android_applets/tree/master/api_guide/networks/http/HttpClient/demo)
+
+代码说明：只需要在DefaultHttpClient的例子中将
+
+    HttpClient httpClient = new DefaultHttpClient();
+修改为
+
+    HttpClient httpCient = AndroidHttpClient.newInstance("");
+
+
