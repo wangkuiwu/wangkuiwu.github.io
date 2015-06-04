@@ -16,3 +16,7 @@ date: 2015-05-02 09:03
 <a name="anchor1"></a>
 # 1. HttpURLConnection概述
 
+
+
+[使用HttpURLConnection向服务器发送post和get请求](http://www.cnblogs.com/linjiqin/archive/2011/09/19/2181634.html)
+
