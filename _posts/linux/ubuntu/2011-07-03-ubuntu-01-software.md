@@ -31,10 +31,33 @@ date: 2011-07-03 09:01
 <a name="anchor2"></a>
 # 2. 新立得/软件中心安装常用软件
 
-(01) 浏览器chromium
+## 2.1 浏览器chromium
 
 打开Software Center之后，搜索Chromium。然后选择安装。
 
+### 2.1.1 chromium安装flash player插件
+
+    $ sudo apt-get install pepperflashplugin-nonfree
+    $ sudo update-pepperflashplugin-nonfree --install
+
+然后重启chromium
+
+### 2.1.2 firefox安装flash player插件
+
+**(1) 下载flash player对应的tar.gz包**
+
+打开[https://get.adobe.com/flashplayer/](https://get.adobe.com/flashplayer/)，下载tar.gz包之后解压，得到libflashplayer.so和usr目录。
+
+**(2) 将usr目录拷贝到/usr中**
+
+    $ sudo cp -r usr/* /usr
+
+**(3) 将libflashplayer.so拷贝到浏览器对应的plugin目录**
+
+    $ sudo cp libflashplayer.so /usr/lib/mozilla/plugins/
+    $ sudo cp libflashplayer.so /usr/lib/chromium-browser/plugins/
+
+然后重启fire fox。
 
 <a name="anchor3"></a>
 # 3. 手动安装的软件

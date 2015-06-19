@@ -227,7 +227,7 @@ hw_module_t定义在hardware/libhardware/include/hardware/hardware.h中，代码
 
 说明：该函数的作用是加载.so库，并将加载后的HAL模块映射到hw_module_t中。  
 (01) dlopen()的作用是打开.so库。  
-(02) dlsym(handle, sym)的作用是在.so库中查找符号为sym的变量，并返回该变量的地址；然后将其返回的地址转换为hw_module_t*类型的指针。先将load()介绍完，后面再详细说说说说dlsym()的原理。  
+(02) dlsym(handle, sym)的作用是在.so库中查找符号为sym的变量，并返回该变量的地址；然后将其返回的地址转换为hw_module_t\*类型的指针。先将load()介绍完，后面再详细说说说说dlsym()的原理。  
 (03) 在得到hw_module_t*类型的变量hmi之后，就将其赋值给pHmi然后返回。
 
 
