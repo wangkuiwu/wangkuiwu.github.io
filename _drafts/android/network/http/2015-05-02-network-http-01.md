@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Android网络之Http篇(一) 网络层次"
+title: "Android网络之HTTP篇(一) 网络层次"
 description: "android network"
 category: android
 tags: [android]
