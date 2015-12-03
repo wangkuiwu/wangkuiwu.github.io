@@ -4,7 +4,7 @@ layout: page
 ---
 
 <ul class="listing">
-{% for post in paginator.posts %}
+{% for post in site.posts %}
   {% capture y %}{{post.date | date:"%Y-%m"}}{% endcapture %}
   {% if year != y %}
     {% assign year = y %}
@@ -17,37 +17,39 @@ layout: page
 {% endfor %}
 </ul>
 
-<div id="post-pagination" class="paginator">
+<!--
+<div id="post-pagination" class="site">
 
-  {% if paginator.previous_page %}
-    {% if paginator.previous_page == 1 %}
+  {% if site.previous_page %}
+    {% if site.previous_page == 1 %}
     <a href="/"><前页</a>
     {% else %}
-    <a href="/page{{paginator.previous_page}}"><前页</a>
+    <a href="/page{{site.previous_page}}"><前页</a>
     {% endif %}
   {% else %}
     <span class="previous disabled"><前页</span>
   {% endif %}
 
-      {% if paginator.page == 1 %}
+      {% if site.page == 1 %}
       <span class="current-page">1</span>
       {% else %}
       <a href="/">1</a>
       {% endif %}
 
-    {% for count in (2..paginator.total_pages) %}
-      {% if count == paginator.page %}
+    {% for count in (2..site.total_pages) %}
+      {% if count == site.page %}
       <span class="current-page">{{count}}</span>
       {% else %}
       <a href="/page{{count}}">{{count}}</a>
       {% endif %}
     {% endfor %}
 
-  {% if paginator.next_page %}
-    <a class="next" href="/page{{paginator.next_page}}">后页></a>
+  {% if site.next_page %}
+    <a class="next" href="/page{{site.next_page}}">后页></a>
   {% else %}
     <span class="next disabled" >后页></span>
   {% endif %}
-  (共{{ paginator.total_posts }}篇)
+  (共{{ site.total_posts }}篇)
 </div>
+-->
 

@@ -1,9 +1,2 @@
 markdown: rdiscount
-permalink: /:year/:month/:day/:title/
-url: http://wangkuiwu.github.com
-author: skywang
-pygments: true
-safe: true
-paginate: 16
-auto: true
-
+highlighter: pygments
