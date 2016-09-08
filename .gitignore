@@ -7,6 +7,7 @@
 *.tgz
 *.out
 *.class
+*.DS_Store
 *~
 
 _site/

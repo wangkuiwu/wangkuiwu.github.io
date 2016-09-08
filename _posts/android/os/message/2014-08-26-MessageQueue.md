@@ -24,7 +24,7 @@ date: 2014-08-26 09:01
 <a name="anchor1"></a>
 # Android消息机制的架构
 
-<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue01.jpg"><img src="" alt="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue01.jpg" /></a>
+<a href="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue01.jpg"><img src="https://raw.githubusercontent.com/wangkuiwu/android_applets/master/os/pic/messagequeue/message_queue01.jpg"  alt=""/></a>
 
 
 上面是消息机制的框架图。  
@@ -77,7 +77,7 @@ Looper是消息循环类。下面先看看ActivityThread中是如何使用Looper
     }
 
 说明：上面是frameworks/base/core/java/android/app/ActivityThread.java中的main()函数代码。  
-通常在新打开一个APK界面时，ActivityManagerService会为该APK启动一个新的新建ActivityThread作为该APK的主线程。该主线程的main函数主要做了两件事：(01),新建ActivityThread对象。  (02),使用主线程进入消息循环。
+通常在新打开一个APK界面时，系统会为APK启动创建一个ActivityThread对象，并调用它的main()方法。该main函数主要做了两件事：(01),新建ActivityThread对象。  (02),使用主线程进入消息循环。
 
 
 
